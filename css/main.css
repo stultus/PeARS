@@ -47,7 +47,11 @@ a:visited { color: #205caa; }
   background-color: white;
 }
 
+<<<<<<< HEAD
 .site-header img {
+=======
+.site-header img{
+>>>>>>> 391a9d6d3bcab6defd9ebc828f5e2c96493daca2
   float: left;
 }
 
