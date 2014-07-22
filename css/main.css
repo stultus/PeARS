@@ -47,6 +47,10 @@ a:visited { color: #205caa; }
   background-color: white;
 }
 
+.site-header img{
+  float: left;
+}
+
 .site-title,
 .site-title:hover,
 .site-title:visited {
