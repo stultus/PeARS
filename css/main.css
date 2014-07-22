@@ -144,6 +144,11 @@ a:visited { color: #205caa; }
   background-color: #fff;
 }
 
+.page-content li img {
+  float: right;
+  padding-left: 20px;
+}
+
 h1 {
   font-size: 24px;
   color: #2a7ae2;
