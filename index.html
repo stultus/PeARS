@@ -19,6 +19,7 @@ search results based on the knowledge, expertise and preferences of their
 owners – all of this, of course, entirely anonymously. The PeARS project
 (Peer-to-peer Agent for Reciprocated Search) is a little experiment
 investigating how this would all work in practice.
+<br><br>
 
   <h1>Posts</h1>
 
@@ -27,6 +28,7 @@ investigating how this would all work in practice.
       <li>
         <span class="post-date">{{ post.date | date: "%b %-d, %Y" }}</span>
         <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
+	{{ post.excerpt }}
       </li>
     {% endfor %}
   </ul>
