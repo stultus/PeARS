@@ -144,6 +144,10 @@ a:visited { color: #205caa; }
   background-color: #fff;
 }
 
+h1 {
+  font-size: 24px;
+  color: #2a7ae2;
+}
 
 /* Home styles */
 /* ----------------------------------------------------------*/
