@@ -5,7 +5,7 @@ title:  "P2: Lemmatising web pages"
 
 When a user types in the query 'dogs' in our PeARS search engine, we want to be able to retrieve not only pages containing 'dogs', but also 'dog', in the singular form. To achieve this, we will apply so-called 'lemmatisation' to our files.
 
-(This blog entry is part of a series starting [here](2014/07/13/retrieving-browsing-history/))
+(This blog entry is part of a series starting [here](http://minimalparts.github.io/PeARS/2014/07/13/retrieving-browsing-history/))
 
 ### Procedure
 
@@ -16,7 +16,7 @@ In what follows, I will demonstrate the lemmatisation process for pages from a p
 * lynx, a text-only web browser  (*sudo apt-get install lynx-cur*)
 * the Stanford POS tagger, which can be downloaded [here](http://nlp.stanford.edu/software/tagger.shtml) The basic version will suffice. After downloading the file, we unpack it with *unzip stanford-postagger-2014-06-16.zip*.
 
-We have our cleaned browsing history, [*history.pages*](../retrieving-browsing-history/), in the ~/PEAR directory. First, let's isolate the wikipedia pages and record them in a separate file, *wikipedia.pages*:
+We have our cleaned browsing history, [*history.pages*](http://minimalparts.github.io/PeARS/2014/07/13/retrieving-browsing-history/), in the ~/PEAR directory. First, let's isolate the wikipedia pages and record them in a separate file, *wikipedia.pages*:
 
 
 {%highlight bash %}

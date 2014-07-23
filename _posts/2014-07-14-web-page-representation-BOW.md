@@ -4,7 +4,7 @@ title:  "P4: Web page representation: the bag-of-words model"
 ---
 For now, we will just represent our pages in a very simplified way, using a bag-of-words for each sentence in the file, that is, we simply output the lemmas for each sentence.
 
-(This blog entry is part of a series starting [here](2014/07/13/retrieving-browsing-history/))
+(This blog entry is part of a series starting [here](http://minimalparts.github.io/PeARS/2014/07/13/retrieving-browsing-history/))
 
 ### Procedure
 

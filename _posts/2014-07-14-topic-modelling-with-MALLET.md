@@ -7,7 +7,7 @@ title:  "P3: Topic modelling with MALLET"
 
 Note that the code described in this entry is part of a script, mkDomainPages, available in [my repository](https://github.com/minimalparts/PeARS/). If you would like to run the code without learning about each step separately, please consult [this page]({{ site.baseurl}}/install/).
 
-(This blog entry is part of a series starting [here](2014/07/13/retrieving-browsing-history/))
+(This blog entry is part of a series starting [here](http://minimalparts.github.io/PeARS/2014/07/13/retrieving-browsing-history/))
 
 Requirements
 ------------

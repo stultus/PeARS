@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Retrieving browsing history from Firefox"
+title:  "P1: Retrieving browsing history from Firefox"
 ---
 The idea behing PeARS is that people share some part of their search history. In this first entry, we will look at obtaining a list of visited pages from Firefox.
 
