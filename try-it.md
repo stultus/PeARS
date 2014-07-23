@@ -60,7 +60,11 @@ python ./mkQueryPage &
 
 You can now open your browser and type in the address bar: http://localhost:8080/. This should open a window looking like this:
 
+{% include image.html url="http://minimalparts.github.io/PeARS/assets/pears-homepage.png" description="PeARS search page" %} 
+
 Search your very own search engine! At this point, you may want to be nice to your pear, and search for something that is actually there. Don’t forget: your pear is supposed to be one amongst thousands of others, and you have only saved a few Wikipedia pages on it – don’t expect it to find things that are not there! My own Wikipedia search history includes quite a few pages about dogs, so I’ll search for terrier dog. Here are the results:
+
+{% include image.html url="http://minimalparts.github.io/PeARS/assets/results-terrier-dog.png" description="PeARS search page" %} 
 
 (Note that I get results from other sites too, because I have already processed other domains. You should only get results from Wikipedia at this stage.)
 

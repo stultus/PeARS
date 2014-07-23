@@ -5,13 +5,13 @@ title:  "P10: Set up the raspberry pi server"
 
 Finally! We can search for real on a remote raspberry pi. Let’s set things up so that we have a web server running on our pi, ready to answer our queries.
 
-(This blog entry is part of a series starting here)
+(This blog entry is part of a series starting [here](http://minimalparts.github.io/PeARS/2014/07/13/retrieving-browsing-history/))
 
 ### Procedure
 
-We first want to enable ssh on our pi. See the Adafruit tutorial on how to do this.
+We first want to enable ssh on our pi. See the [Adafruit tutorial](https://learn.adafruit.com/adafruits-raspberry-pi-lesson-6-using-ssh) on how to do this.
 
-There is also a very good tutorial about setting up your raspberry pi as a web server here.
+There is also a very good tutorial about setting up your raspberry pi as a web server [here](http://www.raspberrypi-spy.co.uk/2013/06/how-to-setup-a-web-server-on-your-raspberry-pi/).
 
 Now, let’s transfer some pre-processed pages to the pi, like we did before when using a local directory as our ‘virtual pi’. For this example, I have processed some pages from the BBC website, which I will transfer to my pi at the address 192.168.2.10.
 
@@ -35,4 +35,7 @@ scp tmp pi@192.168.2.10:/var/www/BBC/BBC.topic.keys
 rm -f tmp
 {% endhighlight %}
 
-We’re all set. Now, you should be able to search your remote pi. Here is a screenshot showing the pi in use:
+We're all set. Now, you should be able to search your remote pi. 
+
+
+
