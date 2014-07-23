@@ -6,9 +6,9 @@ permalink: /faq/
 
 ### Who are you?
 
-I'm Aurelie. I'm a computational semanticist. Go and visit my work page to find out about how computers can analyse contemporary poetry, what is special about cocktail names, what computational linguistics can tell us about the way people speak about gender and race, and other slightly geekier things.
+I'm Aurelie. I'm a computational semanticist. Go and visit [my work page](http://www.cl.cam.ac.uk/~ah433/) to find out about [how computers can analyse contemporary poetry](http://www.cl.cam.ac.uk/~ah433/LLC.pdf), what is special about [cocktail names](http://www.cl.cam.ac.uk/~ah433/binomials_final.pdf), what computational linguistics can tell us about the way people speak about [gender and race](http://www.aclweb.org/anthology/W/W12/W12-1008.pdf), and other slightly geekier things.
 
-### How is PeARS different from other distributed search engines like YaCy?
+### How is PeARS different from other distributed search engines like [YaCy](http://yacy.net/)?
 
 Well, apart from the fact that PeARS is a very small experiment in comparison to organised projects like YaCy, there is also a difference in focus. The YaCy team is doing amazing work on getting the networking aspects of distributed search to work. That is, the challenge of making thousands and thousands of peers on a network queryable in an efficient fashion. PeARS is taking another approach: how can we make sure that we query as few peers, and process as few pages as possible? I am also interested in the linguistic aspects of search. The tendency of the most successful search engines out there has been to gather as much data as possible and do as dumb linguistic processing as possible. If we were more focused in selecting the data we search, we could start being clever again in interpreting and disambiguating user queries, perform direct question answering or even summarising on-the-fly. In my mind, this requires some serious models of how language works and people convey meaning.
 
