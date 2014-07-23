@@ -1,11 +1,11 @@
 ---
 layout: post
-title:  "Organise queryable information"
+title:  "P5: Organise queryable information"
 ---
 
-By now, we have all we need on the 'search engine' side of things: a list of topics covered by the node, an index recording the main topics of each page, and a bag-of-words representation of each page. We will now transfer that information to one of our *pears* (i.e. a raspberry pi on the peer-to-peer network). 
+By now, we have all we need on the 'search engine' side of things: a list of topics covered by the node, an index recording the main topics of each page, and a bag-of-words representation of each page. In the end, we will transfer that information to one of our *pears* (i.e. a raspberry pi on the peer-to-peer network). But first, let's test everything by creating a folder in ~/PeARS/ simulating the pi's filesystem. We'll call that folder 'Pi1'.
 
-{% highlight ruby %}
+{% highlight bash %}
 mkdir Pi1/
 mkdir Pi1/pages
 cp domains/wikipedia-pagereps/* Pi1/pages/

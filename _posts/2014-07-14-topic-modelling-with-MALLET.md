@@ -5,9 +5,9 @@ title:  "P3: Topic modelling with MALLET"
 
 [Topic modelling](http://en.wikipedia.org/wiki/Topic_model) is the process of discovering the topics a text is made of. For instance, a text about house pets might be made of the topics cats, dogs and parrots, the first two being much more prominent in the text than the third. We will apply topic modelling to our collection of documents, so that we know roughly what they are about.
 
-Note that the code described in this entry is part of a script, mkDomainPages, available in my repository. If you would like to run the code without learning about each step separately, please consult this page.
+Note that the code described in this entry is part of a script, mkDomainPages, available in [my repository](https://github.com/minimalparts/PeARS/). If you would like to run the code without learning about each step separately, please consult [this page]({{ site.baseurl}}/install/).
 
-(This blog entry is part of a series starting [here]({{ site.baseurl }}/2014/07/13/retrieving-browsing-history/))
+(This blog entry is part of a series starting [here](2014/07/13/retrieving-browsing-history/))
 
 Requirements
 ------------
@@ -30,7 +30,7 @@ For the topic modelling stage, we only need coarse parts-of-speech, i.e. we only
 cd mallet-2.0.7/
 mkdir data/
 mkdir data/wikipedia
-for f in ~/PEARS/wikipedia-lemmas/*;  
+for f in ~/PeARS/domains/wikipedia-lemmas/*;  
 do  
 f2=`echo $f|sed "s/.*\///"`;  
 head -1 $f > data/wikipedia/$f2; 

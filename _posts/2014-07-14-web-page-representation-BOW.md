@@ -1,22 +1,23 @@
 ---
 layout: post
-title:  "Web page representation: the bag-of-words model"
+title:  "P4: Web page representation: the bag-of-words model"
 ---
 For now, we will just represent our pages in a very simplified way, using a bag-of-words for each sentence in the file, that is, we simply output the lemmas for each sentence.
 
-(This blog entry is part of a series starting here)
+(This blog entry is part of a series starting [here](2014/07/13/retrieving-browsing-history/))
 
 ### Procedure
 
-The script ./mkPageRepresentations, called by ./getDomainPages (both available here), does the work of producing the relevant files. We can run ./mkPageRepresentations as a standalone over our wikipedia pages:
+The script mkPageRepresentations, called by getDomainPages (both available [here](https://github.com/minimalparts/PeARS/)), does the work of producing the relevant files. We can run mkPageRepresentations as a standalone over our wikipedia pages:
 
 
 
 {% highlight bash %}
+de ~/PeARS/
 ./mkPagesRepresentations wikipedia
 {% endhighlight %}
 
-The output, located in the wikipedia-pagereps/ directory, should look like this (for each page):
+The output, located in the domains/wikipedia-pagereps/ directory, should look like this (for each page):
 
 {% highlight bash %}
 <page>

@@ -5,6 +5,8 @@ title:  "P2: Lemmatising web pages"
 
 When a user types in the query 'dogs' in our PeARS search engine, we want to be able to retrieve not only pages containing 'dogs', but also 'dog', in the singular form. To achieve this, we will apply so-called 'lemmatisation' to our files.
 
+(This blog entry is part of a series starting [here](2014/07/13/retrieving-browsing-history/))
+
 ### Procedure
 
 [Lemmatising](https://en.wikipedia.org/wiki/Lemmatisation) is the process of retrieving the base form of words (i.e. their non-inflected form). The idea is to convert all forms of a word to a unique, so-called *lemma*: e.g. *eating, ate, eats, eaten* all get converted to *eat*. 
@@ -24,32 +26,23 @@ less history.txt |grep "en.wikipedia.org" > wikipedia.pages
 Then, let's dump those pages in a wikipedia directory, and while we're at it, let's already create a directory to receive the lemmatised versions of the files:
 
 {%highlight bash %}
-mkdir wikipedia/
-mkdir wikipedia-lemmas/
+mkdir domains/
+mkdir domains/wikipedia/
+mkdir domains/wikipedia-lemmas/
 c=0	#initialise counter
 while read l; 
 do 
-echo "### $l" > wikipedia/$c.lynx;	#Record URL of the page
-lynx -dump $l|sed "s/\[.\+\]//g"|egrep -v "[0-9]*\. http" >> wikipedia/$c.lynx; 
+echo "### $l" > domains/wikipedia/$c.lynx;	#Record URL of the page
+lynx -dump $l|sed "s/\[.\+\]//g"|egrep -v "[0-9]*\. http" >> domains/wikipedia/$c.lynx; 
 c=`expr $c + 1`
 done < wikipedia.pages
 {%endhighlight%}
 
-The ~/PEARS directory should now look like this:
-{%highlight bash %}
-~/PEARS$ ls -1
-history.txt
-history.pages
-wikipedia.pages
-wikipedia/
-wikipedia-lemmas/
-{%endhighlight%}
-
-Now, we'll move to the directory where we have unpacked the Stanford POS tagger, and lemmatise all pages in the ~/PEAR/wikipedia/ folder:
+Now, we'll move to the directory where we have unpacked the Stanford POS tagger, and lemmatise all pages in the ~/PeARS/domains/wikipedia/ folder:
 
 {%highlight bash %}
 cd ~/stanford-postagger-2014-06-16
-for f in ~/PEARS/wikipedia/*; 
+for f in ~/PeARS/domains/wikipedia/*; 
 do
 flemmas=`echo $f|sed "s/wikipedia/wikipedia-lemmas/"`;
 cat $f|sed '1d' > postag.tmp

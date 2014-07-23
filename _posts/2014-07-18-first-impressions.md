@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "P9: First impressions"
+title:  "P9: First impreesions"
 ---
 
 At last, ready for a test drive…
