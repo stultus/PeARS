@@ -1,10 +1,10 @@
 # Site settings
 title: The PeARS project
 email: aurelie DOT herbelot AT cantab DOT net
-description: "PeARS (Peer-to-peer Agent for Reciprocated Search) is a running experiment on whether the work of traditional search engines can be done in a distributed fashion. The project is developed for the Raspberry Pi."
+description: "PeARS (Peer-to-peer Agent for Reciprocated Search) is a basic prototype for a distributed search engine. The project focuses on a) the integration of deep(er) linguistic knowledge in theframework b) a flexible system that affords both increased privacy and social networking capabilities. It is being developed for the raspberry pi."
 baseurl: /PeARS
 url: "http://www.cl.cam.ac.uk/~ah433/"
-twitter_username: none
+twitter_username: PeARSsearch
 github_username:  minimalparts
 pygments: true
 
