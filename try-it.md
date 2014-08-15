@@ -4,7 +4,7 @@ title: Try PeARS
 permalink: /install/
 ---
 
-Before anything else: a little warning note. The PeARS blog and associated code were written in the space of a few days, which leaves much room for errors and improvement. I am sharing my files in their current state – do feel free to point at the shortcomings. Oh, and one more thing: this was my first experience with Python (I am a C++ woman), so I fear my Python code is very, very ugly. Again, feel free to help making it better.
+Before anything else: a little warning note. The PeARS blog and associated code were written in the space of a few days, which leaves much room for errors and improvement. I am sharing my files in their current state – do feel free to point at the shortcomings.
 
 In this little experiment, we are going to find out which pages we have visited on the Internet, and make some of them available for searching from a raspberry pi on our local network (or, if you don’t have a pi at hand, a directory on our computer simulating the pi’s file system).
 
@@ -12,19 +12,19 @@ In this little experiment, we are going to find out which pages we have visited 
 
 I am running all this on an Ubuntu machine, so you may have to adapt things for your OS.
 
-*    install sqlite3: sudo apt-get install sqlite3
+*    install sqlite3: *sudo apt-get install sqlite3*
 
-*    install lynx: sudo apt-get install lynx-cur
+*    install lynx: *sudo apt-get install lynx-cur*
 
-*    install Stanford POS tagger: Download the ‘basic’ Stanford POS Tagger from http://nlp.stanford.edu/software/tagger.shtml#Download and unpack it: unzip stanford-postagger-2014-06-16.zip. I assume you are unpacking in your home directory, so you end up with a ~/stanford-postagger-2014-06-16/ folder or similar.
+*    install Stanford POS tagger: Download the ‘basic’ Stanford POS Tagger from [http://nlp.stanford.edu/software/tagger.shtml#Download](http://nlp.stanford.edu/software/tagger.shtml#Download) and unpack it: *unzip stanford-postagger-2014-06-16.zip*. I assume you are unpacking in your home directory, so you end up with a ~/stanford-postagger-2014-06-16/ folder or similar.
 
-*    download MALLET from http://mallet.cs.umass.edu/download.php and unpack it, also in your home directory: tar -xzvf mallet-2.0.7.tar.gz. You should have a ~/mallet-2.0.7/ folder.
+*    download MALLET from [http://mallet.cs.umass.edu/download.php](http://mallet.cs.umass.edu/download.php) and unpack it, also in your home directory: tar -xzvf mallet-2.0.7.tar.gz. You should have a ~/mallet-2.0.7/ folder.
 
-*    download and install DISSECT: http://clic.cimec.unitn.it/composes/toolkit/installation.html
+*    download and install DISSECT: [http://clic.cimec.unitn.it/composes/toolkit/installation.html](http://clic.cimec.unitn.it/composes/toolkit/installation.html)
 
-*    install web.py: sudo easy_install web.py
+*    install web.py: sudo easy_install web.py (if you don't have easy_install on your machine, do *sudo apt-get install python-setuptools*)
 
-*    create a directory for your PeARS experiments: mkdir ~/PeARS/
+*    create a directory for your PeARS experiments: *mkdir ~/PeARS/*
 
 *    get the PeARS scripts from my repository and save them in your ~/PeARS directory, keeping the directory structure intact.
 
@@ -40,14 +40,20 @@ Run the following:
 
 {%highlight bash %}
 cd ~/PeARS
-./getDomainPages https://en.wikipedia.org wikipedia
+./getDomainPages http://en.wikipedia.org wikipedia
 {%endhighlight%}
 
-This will take care of grabbing the relevant pages from the Internet and processing them, including lemmatising them and producing bags-of-words representations for each sentence on each page.
+(Your Wikipedia search history might be mostly under the secure https://en.wikipedia.org -- check your history to know which to use.) The getDomainPages script will take care of grabbing the relevant pages from the Internet and processing them, including lemmatising them and producing bags-of-words as well as distributional representations for each sentence on each page.
 
 ### Organising a searchable folder
 
-To keep it simple, we will first test the system by creating a Pi1/ folder in ~/PeARS, supposed to simulate a real raspberry pi on the network. Read this blog entry to find out how.
+To keep it simple, we will first test the system by creating a Pi1/ folder in ~/PeARS, supposed to simulate a real raspberry pi on the network. I have added a little script to the PeARS repository, called *./addLocalPearFolder*, which you can run to simulate a pi on your local machine. To use it, run:
+
+{%highlight bash %}
+./addLocalPearFolder Pi1 wikipedia
+{%endhighlight%}
+
+If you want to straight away experiment with a real pi, see [this blog entry](http://minimalparts.github.io/PeARS/2014/07/21/set-up-pi-server/).
 
 ### Searching
 
