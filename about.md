@@ -38,6 +38,8 @@ Advantages:
 
 *   No crawl necessary: the shared pages are those that people visit anyway.
 
+*   No messing about with links: because pages come from a real person's browsing history, the whole job of selecting 'the right links' and coming up with 'authorities' is done manually.
+
 *    Access to pages that would be lost in the results of an aggregated search engine.
 
 *    Social aspect: it is possible to make one’s pear(s) more or less anonymous. The social network buffs out there will like building their own search communities.
