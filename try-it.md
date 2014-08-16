@@ -30,8 +30,9 @@ I am running all this on an Ubuntu machine, so you may have to adapt things for 
 
 ### Get search history
 
-First, we want to access our search history to find out which pages we have visited. Our record will help us decide which pages we want to share with the world. Read this blog entry to find out how to do this.
-Process pages we want to share
+First, we want to access our search history to find out which pages we have visited. Our record will help us decide which pages we want to share with the world. Read [this blog entry](http://minimalparts.github.io/PeARS/2014/07/13/retrieving-browsing-history/) to find out how to retrieve your history from Firefox. Then look at the obtained *history.pages* file and pick a domain you might want to share.
+
+### Process pages we want to share
 
 In this step, we will choose a website that we visit often, and process all the pages in our history for that website, so that they become searchable. For the sake of example, I will assume that everybody has a fair chunk of Wikipedia in their history, and we will start with those pages.
 
