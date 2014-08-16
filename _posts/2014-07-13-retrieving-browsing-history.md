@@ -24,4 +24,4 @@ You probably want to get rid of funny pages in the list (queries and such likes)
 less history.txt |egrep -v "\?|\&|\#"|egrep "^http" > history.pages
 {%endhighlight%}
 
-NB: I’m afraid I haven’t looked into getting a search history from other browsers yet. Feel free to add instructions in the comments. If the worst comes to the worst and you can’t get your history, fake yourself a history file containing URLs, one on each line, and call it history.pages.
+NB: I'm afraid I haven't looked into getting a search history from other browsers yet. Feel free to send me instructions, which I'll add to this page. If the worst comes to the worst and you can’t get your history, fake yourself a history file containing URLs, one on each line, and call it history.pages.
