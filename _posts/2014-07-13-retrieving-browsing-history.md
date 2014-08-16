@@ -15,12 +15,13 @@ I am assuming we have a directory for our PeARS experiments located at ~/PeARS.
 First, let’s find the location of the places.sqlite file in our Firefox installation. It should be something like ~/.mozilla/firefox/vd15j24z.default/places.sqlite. Let’s run: 
 
 {% highlight bash %}
-sqlite3 places.sqlite "SELECT url FROM moz_places" > ~/PEAR/history.txt
+sqlite3 places.sqlite "SELECT url FROM moz_places" > ~/PeARS/history.txt
 {% endhighlight %}
 
 You probably want to get rid of funny pages in the list (queries and such likes), so clean history.txt:
 
 {%highlight bash %}
+cd ~/PeARS/
 less history.txt |egrep -v "\?|\&|\#"|egrep "^http" > history.pages
 {%endhighlight%}
 
