@@ -26,7 +26,7 @@ I am running all this on an Ubuntu machine, so you may have to adapt things for 
 
 *    create a directory for your PeARS experiments: *mkdir ~/PeARS/*
 
-*    get the PeARS scripts from my repository and save them in your ~/PeARS directory, keeping the directory structure intact.
+*    get the PeARS scripts from [my repository](https://github.com/minimalparts/PeARS) and save them in your ~/PeARS directory, keeping the directory structure intact.
 
 ### Get search history
 
