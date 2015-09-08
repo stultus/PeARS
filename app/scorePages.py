@@ -14,6 +14,8 @@ import re
 import time
 import os
 
+import getUrlOverlap
+
 # Change this line to your PeARS folder path
 dm_dict = {}  # Dictionary to store dm file
 url_dict = {}  # Dictionary file ids - urls
@@ -45,24 +47,14 @@ def print_timing(func):
 # Cosine function
 #############################################
 
-def cosine_distance(peer_dist, query_dist):
-    if len(peer_dist) != len(query_dist):
-        raise ValueError("Peer distance and query distance must be "
+def cosine_similarity(peer_v, query_v):
+    if len(peer_v) != len(query_v):
+        raise ValueError("Peer vector and query vector must be "
                          " of same length")
-    num, den_a, den_b = (0 for i in range(3))
-    for i, j in zip(peer_dist, query_dist):
-        num += double(i) * double(j)
-        den_a += double(i) * double(i)
-        den_b += double(j) * double(j)
+    num=multiply(peer_v,query_v).sum()
+    den_a=multiply(peer_v,peer_v).sum()
+    den_b=multiply(query_v,query_v).sum()
     return num / (sqrt(den_a) * sqrt(den_b))
-
-# def cosine_distance(a, b):
-    # a=scipy.array(a,dtype=float)
-    # b=scipy.array(b,dtype=float)
-    # if len(a) != len(b):
-    #raise ValueError, "a and b must be same length"
-    # return 1-scipy_cos_dist(a,b)
-
 
 #################################################
 # Read dm file
@@ -145,27 +137,60 @@ def loadWordClouds(pear):
     word_clouds.close()
 
 
-################################################
-# Score documents for a pear
-################################################
+
+
+###############################################
+# Get distributional score
+###############################################
 
 @print_timing
-def scoreDocs(query_dist, pear):
+def scoreDS(query_dist, pear):
     dd = urllib.urlopen(pear + "/doc.dists.txt")
     doc_dists = dd.readlines()
     dd.close()
     # print "Done reading dd"
 
+    DS_scores={}
     for l in doc_dists:
-        scoreSIM = 0.0  # Initialise score for similarity
-
         l = l.rstrip('\n')
         doc_id = l.split(':')[0]
         doc_dist = array(l.split(':')[1].split())
-#		print doc_id,cosine_distance(doc_dist,query_dist)
-        score = cosine_distance(doc_dist, query_dist)
-        doc_scores[url_dict[doc_id]] = score
-#		url_wordclouds[url_dict[doc_id]]=getWordCloud(pear,doc_id)
+	doc_dist = [double(i) for i in doc_dist]
+#		print doc_id,cosine_similarity(doc_dist,query_dist)
+        score = cosine_similarity(doc_dist, query_dist)
+        DS_scores[url_dict[doc_id]] = score	
+		#url_wordclouds[url_dict[doc_id]]=getWordCloud(pear,doc_id)
+    return DS_scores
+
+
+###############################################
+# Get url overlap score
+###############################################
+
+@print_timing
+def scoreURL(query):
+    q=re.sub("_.", '', query)
+    URL_scores={}
+    for k,v in url_dict.items():
+	URL_scores[v]=getUrlOverlap.runScript(q,v)
+		#print query,v,URL_scores[v]
+    return URL_scores
+
+################################################
+# Score documents for a pear
+################################################
+
+@print_timing
+def scoreDocs(query, query_dist, pear):
+    DS_scores=scoreDS(query_dist,pear)
+    URL_scores=scoreURL(query)
+    for k,v in url_dict.items():
+	if v in DS_scores and v in URL_scores:
+                if URL_scores[v] > 0.7 and DS_scores[v] > 0.3:                                      #If URL overlap high and similarity okay
+                        print v, DS_scores[v], URL_scores[v]
+                        doc_scores[v]=DS_scores[v]+URL_scores[v]*0.2                                #Boost DS score by a maximum of 0.2 (thresholds to be updated when we have proper evaluation data)
+		else:
+			doc_scores[v]=DS_scores[v]
     return doc_scores
 
 #################################################
@@ -238,7 +263,7 @@ def runScript(pears, query):
             # print pear
             loadURLs(pear)
             loadWordClouds(pear)
-            scoreDocs(query_dist, pear)
+            scoreDocs(query, query_dist, pear)
         best_urls = bestURLs(doc_scores)
     return output(best_urls, query)
 
