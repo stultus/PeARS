@@ -13,6 +13,7 @@ import sys
 import re
 import time
 import os
+from .findBestPears import mkQueryDist,cosine_similarity
 
 import getUrlOverlap
 
@@ -43,34 +44,6 @@ def print_timing(func):
 ##### Helpful functions end ##############################################
 
 
-#############################################
-# Cosine function
-#############################################
-
-def cosine_similarity(peer_v, query_v):
-    if len(peer_v) != len(query_v):
-        raise ValueError("Peer vector and query vector must be "
-                         " of same length")
-    num=multiply(peer_v,query_v).sum()
-    den_a=multiply(peer_v,peer_v).sum()
-    den_b=multiply(query_v,query_v).sum()
-    return num / (sqrt(den_a) * sqrt(den_b))
-
-#################################################
-# Read dm file
-#################################################
-
-def readDM():
-    with open(os.path.join(os.path.dirname(__file__), "wikiwoods.dm")) as f:
-        dmlines = f.readlines()
-        f.close()
-
-    # Make dictionary with key=row, value=vector
-    for l in dmlines:
-        items = l.rstrip('\n').split('\t')
-        row = items[0]
-        vec = [float(i) for i in items[1:]]
-        dm_dict[row] = vec
 
 ##############################################
 # Read url file
@@ -91,35 +64,6 @@ def loadURLs(pear):
         reverse_url_dict[url] = idfile
     d.close()
 
-##############################################
-# Make distribution for query
-##############################################
-
-
-def mkQueryDist(query):
-    words = query.rstrip('\n').split()
-
-    # Only retain arguments which are in the distributional semantic space
-    vecs_to_add = []
-    for w in words:
-        m = re.search('(.*_.).*', w)
-        if m:
-            w = m.group(1).lower()
-        if w in dm_dict:
-            #				print "Adding",w,"to vecs_to_add"
-            vecs_to_add.append(w)
-
-    vbase = array([])
-    # Add vectors together
-    if len(vecs_to_add) > 0:
-        # Take first word in vecs_to_add to start addition
-        base = vecs_to_add[0]
-        vbase = array(dm_dict[base])
-        for item in range(1, len(vecs_to_add)):
-            #				print item,"Adding vector",vecs_to_add[item]
-            vbase = vbase + array(dm_dict[vecs_to_add[item]])
-
-    return vbase
 
 ##############################################
 # Get word clouds for a pear
@@ -137,8 +81,6 @@ def loadWordClouds(pear):
     word_clouds.close()
 
 
-
-
 ###############################################
 # Get distributional score
 ###############################################
@@ -150,16 +92,16 @@ def scoreDS(query_dist, pear):
     dd.close()
     # print "Done reading dd"
 
-    DS_scores={}
+    DS_scores = {}
     for l in doc_dists:
         l = l.rstrip('\n')
         doc_id = l.split(':')[0]
         doc_dist = array(l.split(':')[1].split())
-	doc_dist = [double(i) for i in doc_dist]
+        doc_dist = [double(i) for i in doc_dist]
 #		print doc_id,cosine_similarity(doc_dist,query_dist)
         score = cosine_similarity(doc_dist, query_dist)
-        DS_scores[url_dict[doc_id]] = score	
-		#url_wordclouds[url_dict[doc_id]]=getWordCloud(pear,doc_id)
+        DS_scores[url_dict[doc_id]] = score
+        # url_wordclouds[url_dict[doc_id]]=getWordCloud(pear,doc_id)
     return DS_scores
 
 
@@ -169,28 +111,32 @@ def scoreDS(query_dist, pear):
 
 @print_timing
 def scoreURL(query):
-    q=re.sub("_.", '', query)
-    URL_scores={}
-    for k,v in url_dict.items():
-	URL_scores[v]=getUrlOverlap.runScript(q,v)
-		#print query,v,URL_scores[v]
+    q = re.sub("_.", '', query)
+    URL_scores = {}
+    for k, v in url_dict.items():
+        URL_scores[v] = getUrlOverlap.runScript(q, v)
+        # print query,v,URL_scores[v]
     return URL_scores
 
 ################################################
 # Score documents for a pear
 ################################################
 
+
 @print_timing
 def scoreDocs(query, query_dist, pear):
-    DS_scores=scoreDS(query_dist,pear)
-    URL_scores=scoreURL(query)
-    for k,v in url_dict.items():
-	if v in DS_scores and v in URL_scores:
-                if URL_scores[v] > 0.7 and DS_scores[v] > 0.3:                                      #If URL overlap high and similarity okay
-                        print v, DS_scores[v], URL_scores[v]
-                        doc_scores[v]=DS_scores[v]+URL_scores[v]*0.2                                #Boost DS score by a maximum of 0.2 (thresholds to be updated when we have proper evaluation data)
-		else:
-			doc_scores[v]=DS_scores[v]
+    DS_scores = scoreDS(query_dist, pear)
+    URL_scores = scoreURL(query)
+    for k, v in url_dict.items():
+        if v in DS_scores and v in URL_scores:
+            if URL_scores[v] > 0.7 and DS_scores[
+                    v] > 0.3:  # If URL overlap high and similarity okay
+                print v, DS_scores[v], URL_scores[v]
+                # Boost DS score by a maximum of 0.2 (thresholds to be updated
+                # when we have proper evaluation data)
+                doc_scores[v] = DS_scores[v] + URL_scores[v] * 0.2
+            else:
+                doc_scores[v] = DS_scores[v]
     return doc_scores
 
 #################################################
@@ -255,7 +201,6 @@ def output(best_urls, query):
 
 @print_timing
 def runScript(pears, query):
-    readDM()
     query_dist = mkQueryDist(query)
     best_urls = []
     if len(pears) > 0:
