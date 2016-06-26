@@ -109,7 +109,7 @@ def readPears():
         for l in sp:
                 l=l.rstrip('\n')
                 items=l.split()
-                pear_name =  items[0]
+                pear_name =  root_dir+"/"+items[0]
                 pear_dist =[float(i) for i in items[1:]]
                 pears_ids[pear_name]=pear_dist
         sp.close()
