@@ -31,7 +31,6 @@ with open("/dev/null", "a") as null:
 
 # Configure virtual environment ('virtualenv')
 os.system("sudo virtualenv pears_env")
-os.system("bash --rcfile pears_env/bin/activate")
 
 
 # Installing dependencies
@@ -40,5 +39,5 @@ os.system("cd ../../")
 
 
 # Get the semantic space
-os.system("wget aurelieherbelot.net/pears-demo/wikiwoods.dump.bz2")
-os.system("./uncompress_db wikiwoods.dump.bz2")
+os.system("wget http://clic.cimec.unitn.it/~aurelie.herbelot/openvectors.dump.bz2")
+os.system("./uncompress_db openvectors.dump.bz2")
