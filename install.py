@@ -30,7 +30,7 @@ with open("/dev/null", "a") as null:
 
 
 # Configure virtual environment ('virtualenv')
-os.system("sudo virtualenv pears_env")
+os.system("virtualenv pears_env")
 
 
 # Installing dependencies
