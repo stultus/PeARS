@@ -22,6 +22,9 @@ To know more head over to: <a href="http://aurelieherbelot.net/pears/">http://au
 
 ###Set up the development environment
 
+You can use script or the automatic installation instruc below. Automatic installation:
+`$ python install.py`
+
 1. <b>Set up virtualenv</b>
     >We recommend using virtualenv for the development. If you are just here for test it out, skip to the next section.
 
