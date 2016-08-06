@@ -4,15 +4,14 @@
 # USAGE: called by mkQueryPage.py when user enters a query
 ################################################################
 
-import numpy as np
-from math import isnan
-import urllib
 import re
+from math import isnan
+
+import numpy as np
+
 from .utils import cosine_similarity, print_timing
 
-
-num_best_pears=5
-
+num_best_pears = 5
 
 
 ###################################################
@@ -41,10 +40,10 @@ def outputBestPears(pears_scores):
         pi_name = ""
         pi_picture = ""
         pi_message = ""
-	if pear.endswith('/'):
-	        pear = pear[:-1]
-        #profile_file = urllib.urlopen(base_url + "profile.txt")
-        profile_file = open(pear+"/profile.txt")
+        if pear.endswith('/'):
+            pear = pear[:-1]
+        # profile_file = urllib.urlopen(base_url + "profile.txt")
+        profile_file = open(pear + "/profile.txt")
 
         profile.append(pear)
         for line in profile_file:
@@ -66,7 +65,7 @@ def outputBestPears(pears_scores):
 
 # The @ decorator before the function invokes print_timing()
 @print_timing
-def runScript(query_dist,pears_ids):
+def runScript(query_dist, pears_ids):
     best_pears = []
 
     #############################################################
@@ -75,12 +74,11 @@ def runScript(query_dist,pears_ids):
 
     if len(query_dist) > 0:
         pears_scores = {}
-	for pear_name,v in pears_ids.items():
-		scoreSIM = 0.0          #Initialise score for similarity
-		score=cosine_similarity(np.array(v),query_dist)
-		if not isnan(score):
-			pears_scores[pear_name]=score
-			print pear_name,score
-        best_pears=outputBestPears(pears_scores)
+        for pear_name, v in pears_ids.items():
+            scoreSIM = 0.0  # Initialise score for similarity
+            score = cosine_similarity(np.array(v), query_dist)
+            if not isnan(score):
+                pears_scores[pear_name] = score
+                print pear_name, score
+        best_pears = outputBestPears(pears_scores)
     return best_pears
-

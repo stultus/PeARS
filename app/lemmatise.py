@@ -1,4 +1,5 @@
-from textblob import TextBlob, Word
+from textblob import Word
+
 
 #######################################
 # Lemmatise query
@@ -10,11 +11,11 @@ def lemmatiseQuery(query):
         try:
             lemma = Word(surface_word).lemmatize()
             lemmatised_query = lemmatised_query + lemma + " "
-            lemma_verb = Word(surface_word).lemmatize('v')                              #Hack. Now we don't have POSs anymore, we must check whether the word might be an irregular verb ('was', 'would')
+            lemma_verb = Word(surface_word).lemmatize(
+                'v')  # Hack. Now we don't have POSs anymore, we must check whether the word might be an irregular verb ('was', 'would')
             if lemma_verb != lemma:
-                lemmatised_query = lemmatised_query + lemma_verb + " "                  #Only include if different. So 'calls' (plural noun or 3.sing verb) would end up with just one mention
+                lemmatised_query = lemmatised_query + lemma_verb + " "  # Only include if different. So 'calls' (plural noun or 3.sing verb) would end up with just one mention
         except:
             lemmatised_query = lemmatised_query + surface_word + " "
         print lemmatised_query
     return lemmatised_query
-

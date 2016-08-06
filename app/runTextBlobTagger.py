@@ -1,10 +1,9 @@
-from textblob import TextBlob
-from textblob import Word
-import textblob_aptagger
 import codecs
-import string
-import sys
 import re
+import sys
+
+import textblob_aptagger
+from textblob import Word
 
 # Initialise tagger
 pt = textblob_aptagger.PerceptronTagger()
@@ -13,7 +12,7 @@ pt = textblob_aptagger.PerceptronTagger()
 def runScript(f1, f2):
     text = codecs.open(f1, 'r', encoding='utf-8')
     text_out = open(f2, 'w')
-    #text=open(sys.argv[1], 'r')
+    # text=open(sys.argv[1], 'r')
     text_lines = []
     tmpline = ""
 
@@ -34,7 +33,7 @@ def runScript(f1, f2):
                 if m3:
                     tmpline = tmpline + " " + line
                     text_lines.append(tmpline)
-        #			print tmpline.encode('utf8', 'replace')
+                    #			print tmpline.encode('utf8', 'replace')
                     tmpline = ""
                 else:
                     tmpline = tmpline + " " + line
@@ -49,11 +48,11 @@ def runScript(f1, f2):
                 for word in tags:
                     surface = word[0]
                     pos = word[1]
-    #				print word
+                    #				print word
                     try:
                         if pos[0] == 'N' or pos[0] == 'V':
                             tag = Word(surface).lemmatize(
-                                pos[0].lower()) + "_" + pos
+                                    pos[0].lower()) + "_" + pos
                         else:
                             tag = Word(surface).lemmatize().lower() + "_" + pos
                         taggedline = taggedline + tag + " "
@@ -65,6 +64,7 @@ def runScript(f1, f2):
         to_print = taggedline.encode('utf8', 'replace') + "\n"
         text_out.write(to_print)
     text_out.close()
+
 
 if __name__ == '__main__':
     # when executing as script

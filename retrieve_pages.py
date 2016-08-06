@@ -1,13 +1,14 @@
-
 # -*- coding: utf-8 -*-
-from bs4 import BeautifulSoup
 import os
 import platform
 import re
-import requests
 import sqlite3
 import sys
 from urllib2 import HTTPError
+
+import requests
+from bs4 import BeautifulSoup
+
 from create_history_db import create_history_db
 
 HISTORY_DB = ''
@@ -26,11 +27,12 @@ def get_firefox_history_db(in_dir):
     for files in os.walk(firefox_directory):
         # Build the filename
         if re.search('places.sqlite', str(os.path.join(files))):
-            history_db = str(os.path.realpath(files[0])+'/places.sqlite')
+            history_db = str(os.path.realpath(files[0]) + '/places.sqlite')
             print history_db
             return history_db
 
     return None
+
 
 print HISTORY_DB
 
