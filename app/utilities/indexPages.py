@@ -1,8 +1,7 @@
-############################################################
-# indexPages.py takes a file with urls and indexes the
-# corresponding pages on a particular pear (local folder, )
-# which can then be transferred to a web server.
-############################################################
+""" Takes a file with urls and indexes the
+corresponding pages on a particular pear (local folder, )
+which can then be transferred to a web server.
+"""
 
 import os
 import re
@@ -22,11 +21,8 @@ reverse_url_dict = {}  # Reverse URL dictionary, just for the purpose of indexin
 new_files_ids = []  # A holder for the new pages being processed, expressed as an ID number on the pear
 
 
-#############################################################
-# Load existing url dictionary
-#############################################################
-
 def loadURLs(pear):
+    """ Load existing url dictionary """
     print "Loading URL dictionary for", pear
     path_to_dict = os.path.join(path_to_PeARS, pear + "/urls.dict.txt")
 
@@ -40,11 +36,8 @@ def loadURLs(pear):
         d.close()
 
 
-#############################################################
-# Print updated url dictionary
-#############################################################
-
 def printURLs(pear):
+    """ Print updated url dictionary """
     print "Printing/updating URL dictionary for", pear
     path_to_dict = os.path.join(path_to_PeARS, pear + "/urls.dict.txt")
 
@@ -55,11 +48,8 @@ def printURLs(pear):
     d.close()
 
 
-#############################################################
-# Grab pages in input file using the text-only browser lynx
-#############################################################
-
 def lynx(pages_file, pear):
+    """ Grab pages in input file using the text-only browser lynx """
     print "Lynxing pages..."
 
     c = len(url_dict)  # Initialise counter to number of existing files on that pear
@@ -95,12 +85,8 @@ def lynx(pages_file, pear):
     pages.close()
 
 
-#########################################################
-# Tag pages for that domain using runTextBlobTagger.py
-#########################################################
-
-
 def postag(pear):
+    """ Tag pages for that domain using runTextBlobTagger.py """
     print "POS-tagging pages..."
 
     for file_id in new_files_ids:
@@ -109,35 +95,24 @@ def postag(pear):
         runTextBlobTagger.runScript(lynx_file, lemmatised_file)
 
 
-#########################
-# Update index for pear
-#########################
-
 def index(pear):
+    """ Update index for pear """
     print "Indexing pages on " + pear
     for file_id in new_files_ids:
-        #	for i in range(0,40):
-        #		file_id=str(i)+".txt"
         lemmatised_file = os.path.join(path_to_PeARS, pear + "/lemmas/" + file_id)
         mkPositionalIndex.runScript(lemmatised_file, pear)
 
 
-##############################
-# Run distributional semantics
-##############################
-
 def distsem(pear):
+    """ Run distributional semantics """
     print "Making distributional semantics representations on " + pear
     for file_id in new_files_ids:
         print "Processing file", file_id
         runDistSem.runScript(file_id, pear)
 
 
-###########################################
-# Update shared_pears_ids.txt file
-###########################################
-
 def update_shared_ids(pear):
+    """ Update shared_pears_ids.txt file """
     dist = ""
     pear_profile = open(os.path.join(path_to_PeARS, pear + "/profile.txt"), "r")
     for l in pear_profile:
@@ -163,9 +138,6 @@ def update_shared_ids(pear):
     pears_ids.close()
 
 
-###################
-# Entry point
-###################
 def runScript(a1, a2):
     pages_file = a1  # File containing pages to be processed
     pear = a2  # The pear which will host these pages (local folder)

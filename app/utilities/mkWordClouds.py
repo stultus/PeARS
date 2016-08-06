@@ -19,6 +19,7 @@ word_clouds = {}
 # WordEntry contains all the information pertaining to a word
 # (freq, docs in which it appears)
 class WordEntry:
+    """ Contains all the information pertaining to a word (freq, docs in which it appears) """
     def __init__(self, freq):
         self.freq = freq
         self.docs = []
@@ -81,9 +82,6 @@ def calculateTFIDF():
                 tfidfs[doc_name][word] = tfidf
 
 
-# print doc_name,str(tfidf),word
-
-
 def computeWordClouds():
     non_alpha = re.compile('[\W_]+')  # non-alpha characters
     for doc_name, tfidf_dict in tfidfs.items():
@@ -107,7 +105,6 @@ def computeWordClouds():
 def writeWordClouds(path_to_clouds):
     out = open(path_to_clouds, 'w')
     for k, v in word_clouds.items():
-        #		print k,v
         line = k + ":" + v
         out.write(line + '\n')
 

@@ -1,9 +1,7 @@
-####################################################################
-# ./runDistSem.py is a script which takes lemmatised web
-# pages and  outputs one distribution per sentence -- the addition
-# of all word vectors in that sentence.
-# ./runDistSem.py is called by indexPages.py
-####################################################################
+""" Takes lemmatised web pages and  outputs one distribution per sentence --
+the addition of all word vectors in that sentence.
+./runDistSem.py is called by indexPages.py
+"""
 
 import os
 import re
@@ -16,10 +14,6 @@ pear = ""  # Initialise variable for the pear we're adding page representations 
 
 dm_dict = {}  # Dictionary to store dm file
 
-
-#################################################
-# Read dm file
-#################################################
 
 def readDM():
     with open(os.path.join(path_to_PeARS, "wikiwoods.dm")) as f:
@@ -34,11 +28,8 @@ def readDM():
         dm_dict[row] = vec
 
 
-##################################################
-# Process lemmatised file
-##################################################
-
 def processFile(lemma_file, pear):
+    """ Process lemmatised file """
     doc_dist = []  # Holder for document distribution
     for x in range(300):  # Initialise doc_dist
         doc_dist.append(0)
@@ -70,7 +61,6 @@ def processFile(lemma_file, pear):
         sentenceNumber = i
 
         words = lines[i].rstrip('\n').split()
-        #		print "Sentence",sentenceNumber,":",words
 
         # Only retain arguments which are in the distributional semantic space
         vecs_to_add = []
@@ -79,7 +69,6 @@ def processFile(lemma_file, pear):
             if m:
                 w = m.group(1).lower()
             if w in dm_dict:
-                #				print "Adding",w,"to vecs_to_add"
                 vecs_to_add.append(w)
 
         # Initialise vbase
@@ -93,7 +82,6 @@ def processFile(lemma_file, pear):
             base = vecs_to_add[0]  # Take first word in vecs_to_add to start addition
             vbase = array(dm_dict[base])
             for item in range(1, len(vecs_to_add)):
-                #				print item,"Adding vector",vecs_to_add[item]
                 vbase = vbase + array(dm_dict[vecs_to_add[item]])
 
         # Make string version of distribution

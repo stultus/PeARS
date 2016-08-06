@@ -1,9 +1,3 @@
-################################################################
-# utils includes all the utility methods being used throughout
-# the codebase
-################################################################
-
-
 
 import os
 import pdb
@@ -23,20 +17,12 @@ stopwords = ["", "(", ")", "a", "about", "an", "and", "are", "around", "as", "at
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
 
-########################################################
-# Normalise array
-########################################################
-
 def normalise(v):
     norm = linalg.norm(v)
     if norm == 0:
         return v
     return v / norm
 
-
-#############################################
-# Cosine function
-#############################################
 
 def cosine_similarity(peer_v, query_v):
     if len(peer_v) != len(query_v):
@@ -47,10 +33,6 @@ def cosine_similarity(peer_v, query_v):
     den_b = dot(query_v, query_v)
     return num / (sqrt(den_a) * sqrt(den_b))
 
-
-#################################################
-# Load entropy list
-#################################################
 
 def loadEntropies():
     global root_dir
@@ -63,17 +45,15 @@ def loadEntropies():
         l = l.rstrip('\n')
         fields = l.split('\t')
         w = fields[0].lower()
-        if w.isalpha() and w not in entropies_dict:  # Must have this cos lower() can match two instances of the same word in the list
+        # Must have this cos lower() can match two instances of the same word in the list
+        if w.isalpha() and w not in entropies_dict:
             entropies_dict[w] = float(fields[1])
     f.close()
     return entropies_dict
 
 
-##############################################
-# Make distribution for query
-##############################################
-
 def mkQueryDist(query, entropies):
+    """ Make distribution for query """
     words = query.rstrip('\n').split()
 
     # Only retain arguments which are in the distributional semantic space
@@ -105,10 +85,6 @@ def mkQueryDist(query, entropies):
     return vbase
 
 
-##############################################
-# Read pears  ids
-##############################################
-
 def readPears():
     shared_pears_ids = os.path.join(
             os.path.dirname(__file__),
@@ -126,10 +102,8 @@ def readPears():
     return pears_ids
 
 
-# Timing function, just to know how long things take
-
-
 def print_timing(func):
+    """ Timing function, just to know how long things take """
     def wrapper(*arg):
         t1 = time.time()
         res = func(*arg)

@@ -1,7 +1,6 @@
-#####################################################################
-# Make page representation as the WEIGHTED sum of the most 'important'
-# words in the page (obtained via entropy calculation)
-#####################################################################
+""" Make page representation as the WEIGHTED sum of the most 'important'
+words in the page (obtained via entropy calculation)
+"""
 
 import math
 import os
@@ -23,20 +22,12 @@ entropies_dict = {}  # Word freqs in ukWac
 doc_dists = []  # Which files already have a distribution
 
 
-#############################################
-# Normalisation
-#############################################
-
 def normalise(v):
     norm = np.linalg.norm(v)
     if norm == 0:
         return v
     return v / norm
 
-
-#################################################
-# Read dm file
-#################################################
 
 def readDM():
     with open(path_to_PeARS + "openvectors.dm") as f:
@@ -51,10 +42,6 @@ def readDM():
         dm_dict[row] = normalise(vec)
 
 
-#############################################
-# Cosine function
-#############################################
-
 def cosine_similarity(peer_v, query_v):
     if len(peer_v) != len(query_v):
         raise ValueError("Peer vector and query vector must be "
@@ -65,11 +52,8 @@ def cosine_similarity(peer_v, query_v):
     return num / (sqrt(den_a) * sqrt(den_b))
 
 
-############################################
-# Compute similarities and return top n
-############################################
-
 def sim_to_matrix(vec, n):
+    """ Compute similarities and return top n """
     cosines = {}
     c = 0
     for k, v in dm_dict.items():
@@ -87,24 +71,17 @@ def sim_to_matrix(vec, n):
             break
 
 
-#################################################
-# Load entropy list
-#################################################
-
 def loadEntropies():
     f = open("ukwac.entropy.txt", "r")
     for l in f:
         l = l.rstrip('\n')
         fields = l.split('\t')
         w = fields[0].lower()
-        if w.isalpha() and w not in entropies_dict:  # Must have this cos lower() can match two instances of the same word in the list
+        # Must have this cos lower() can match two instances of the same word in the list
+        if w.isalpha() and w not in entropies_dict:
             entropies_dict[w] = float(fields[1])
     f.close()
 
-
-##################################################
-# Get weights from file
-##################################################
 
 def weightFile(buff):
     word_dict = {}
@@ -112,7 +89,6 @@ def weightFile(buff):
     for w in words:
         w = w.lower()
         if w in entropies_dict and w not in stopwords:
-            # if w in freqs_dict:
             if w in word_dict:
                 word_dict[w] += 1
             else:
@@ -123,11 +99,8 @@ def weightFile(buff):
     return word_dict
 
 
-################################################
-# Make vectors from weights
-################################################
-
 def mkVector(word_dict):
+    """ Make vectors from weights """
     # Initialise vbase and doc_dist vectors
     vbase = np.zeros(num_dimensions)
     # Add vectors together

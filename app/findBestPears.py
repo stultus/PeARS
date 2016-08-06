@@ -1,8 +1,6 @@
-################################################################
-# findBestPeARS.py identifies best pears on the network for a
-# particular query.
-# USAGE: called by mkQueryPage.py when user enters a query
-################################################################
+""" Identifies best pears on the network for a particular query.
+USAGE: called by mkQueryPage.py when user enters a query
+"""
 
 import re
 from math import isnan
@@ -14,11 +12,8 @@ from .utils import cosine_similarity, print_timing
 num_best_pears = 5
 
 
-###################################################
-# Sort scores and output n best pears
-###################################################
-
 def outputBestPears(pears_scores):
+    """ Sort scores and output n best pears """
     pears = []
     count = 0
     for w in sorted(pears_scores, key=pears_scores.get, reverse=True):
@@ -29,10 +24,7 @@ def outputBestPears(pears_scores):
         else:
             break
 
-    #####################
     # Output helpful pears
-    #####################
-
     r = []
     # Retrieve pear.profile data
     for pear in pears:
@@ -59,19 +51,11 @@ def outputBestPears(pears_scores):
     return r
 
 
-#############################################
-# Main function, called by mkQueryPage.py
-##############################################
-
-# The @ decorator before the function invokes print_timing()
 @print_timing
 def runScript(query_dist, pears_ids):
     best_pears = []
 
-    #############################################################
     # Calculate score for each pear in relation to the user query
-    #############################################################
-
     if len(query_dist) > 0:
         pears_scores = {}
         for pear_name, v in pears_ids.items():

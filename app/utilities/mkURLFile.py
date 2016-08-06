@@ -81,14 +81,9 @@ def grabPages(domain):
     for line in history:
         regex = "^" + domain
         if re.search(regex, line):
-            #			print line
             domainpages.write(line)
     domainpages.close()
 
-
-##############################
-# Entry point
-##############################
 
 # Remove previous version of testPeARS.pages
 if os.path.exists(os.path.join(path_to_PeARS, "test.pages")):

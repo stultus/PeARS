@@ -1,6 +1,4 @@
-###############################################
-# Make user profiles by adding document vectors
-###############################################
+""" Make user profiles by adding document vectors """
 
 import os
 import sys
@@ -18,11 +16,8 @@ num_dimensions = 400
 dm_dict = {}
 
 
-###############################################
-# Read list of users
-###############################################
-
 def readUsers(usernames_file):
+    """ Read list of users """
     # print "Getting users..."
     users = []
     f = open(usernames_file, 'r')
@@ -33,10 +28,6 @@ def readUsers(usernames_file):
     return users
 
 
-#############################################
-# Normalisation
-#############################################
-
 def normalise(v):
     norm = np.linalg.norm(v)
     if norm == 0:
@@ -44,11 +35,8 @@ def normalise(v):
     return v / norm
 
 
-#################################################
-# Read dm file (but only top 10,000 words)
-#################################################
-
 def readDM():
+    """ Read dm file (but only top 10,000 words) """
     c = 0
     # Make dictionary with key=row, value=vector
     dmlines = open("openvectors.dm", 'r')
@@ -64,10 +52,6 @@ def readDM():
     dmlines.close()
 
 
-#############################################
-# Cosine function
-#############################################
-
 def cosine_similarity(peer_v, query_v):
     if np.linalg.norm(peer_v) != 0 and np.linalg.norm(query_v) != 0:
         if len(peer_v) != len(query_v):
@@ -81,11 +65,8 @@ def cosine_similarity(peer_v, query_v):
         return 0
 
 
-############################################
-# Compute similarities and return top n
-############################################
-
 def sim_to_matrix(vec, n):
+    """ Compute similarities and return top n """
     cosines = {}
     for k, v in dm_dict.items():
         cos = cosine_similarity(np.array(vec), np.array(v))
@@ -106,9 +87,6 @@ def sim_to_matrix(vec, n):
     return topics, topics_s[:-1]
 
 
-############################################
-# Compute coherence
-############################################
 def coherence(vecs):
     coh = 0.0
     counter = 0
@@ -129,10 +107,6 @@ def coherence(vecs):
     # print coh
     return coh
 
-
-###########################################
-# Compute profile
-###########################################
 
 def computePearDist(pear):
     vbase = np.zeros(num_dimensions)
@@ -171,9 +145,6 @@ def createProfileFile(pear, pear_dist, topics_s, coh):
     profile.close()
 
 
-###################
-# Entry point
-###################
 def runScript(user):
     readDM()
     print "Computing pear for", user
@@ -183,8 +154,7 @@ def runScript(user):
     createProfileFile(user, print_v, topics_s, coh)
 
 
-# except:
-#	print "ERROR: PERHAPS PEAR NOT FOUND?"
+# PERHAPS PEAR NOT FOUND?
 
 if __name__ == '__main__':
     # when executing as script

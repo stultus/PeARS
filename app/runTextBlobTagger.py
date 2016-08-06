@@ -5,6 +5,7 @@ import sys
 import textblob_aptagger
 from textblob import Word
 
+
 # Initialise tagger
 pt = textblob_aptagger.PerceptronTagger()
 
@@ -33,7 +34,6 @@ def runScript(f1, f2):
                 if m3:
                     tmpline = tmpline + " " + line
                     text_lines.append(tmpline)
-                    #			print tmpline.encode('utf8', 'replace')
                     tmpline = ""
                 else:
                     tmpline = tmpline + " " + line
@@ -48,7 +48,6 @@ def runScript(f1, f2):
                 for word in tags:
                     surface = word[0]
                     pos = word[1]
-                    #				print word
                     try:
                         if pos[0] == 'N' or pos[0] == 'V':
                             tag = Word(surface).lemmatize(

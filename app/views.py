@@ -1,19 +1,12 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys
 
 from flask import render_template, request
 
 import findBestPears
 import scorePages
 from app import app
-
-reload(sys)
-from .utils import readPears, mkQueryDist, loadEntropies
-
-# from lemmatise import lemmatiseQuery
-# from forms import SearchForm
-sys.setdefaultencoding("utf-8")
+from app.utils import readPears, mkQueryDist, loadEntropies
 
 
 @app.route('/')
