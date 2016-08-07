@@ -6,7 +6,7 @@
 
 /* Toggle Styles */
 .navbar {
-  margin-bottom: 0px;
+    margin-bottom: 0px;
 }
 
 #wrapper {
@@ -76,7 +76,7 @@
 .sidebar-nav li a:hover {
     text-decoration: none;
     color: #fff;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .sidebar-nav li a:active,
@@ -99,10 +99,10 @@
     background: none;
 }
 
-@media(min-width:768px) {
+@media (min-width: 768px) {
     #wrapper {
         padding-right: 250px;
-        padding-left:100px;
+        padding-left: 100px;
     }
 
     #wrapper.toggled {

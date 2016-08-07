@@ -1,7 +1,10 @@
 #!/usr/bin/python
-import sqlite3, sys, os, bz2
-dumpfile = sys.argv[1] if len(sys.argv) > 1 else 'openvectors.dump.bz2'
+import bz2
+import os
+import sqlite3
+import sys
 
+dumpfile = sys.argv[1] if len(sys.argv) > 1 else 'openvectors.dump.bz2'
 
 ch = raw_input("This will re-write the existing openvectors.db. Continue?(y/n):").lower()
 
@@ -16,7 +19,7 @@ if ch == 'y':
     dump = dumpfile[:-4]
     open(dump, 'wb').write(data)
     f = open(dump, 'r+')
-    s = [y for x, y in enumerate(f) if x not in [line-1 for line in range(3,9)]]
+    s = [y for x, y in enumerate(f) if x not in [line - 1 for line in range(3, 9)]]
     f.seek(0)
     f.write(''.join(s))
     f.truncate(f.tell())
@@ -25,7 +28,8 @@ if ch == 'y':
     con = sqlite3.connect('openvectors.db')
     cursor = con.cursor()
     try:
-        cursor.executescript('CREATE TABLE open_vectors (id INTEGER NOT NULL,word TEXT(65),vector TEXT,PRIMARY KEY (id));')
+        cursor.executescript(
+            'CREATE TABLE open_vectors (id INTEGER NOT NULL,word TEXT(65),vector TEXT,PRIMARY KEY (id));')
     except:
         pass
 
@@ -36,4 +40,3 @@ if ch == 'y':
     con.close()
     os.remove('openvectors.dump')
     print "openvectors.db has been populated!"
-

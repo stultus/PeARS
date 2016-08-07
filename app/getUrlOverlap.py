@@ -7,8 +7,8 @@
 ########################################################################
 
 
-import sys
 import re
+import sys
 
 
 def jaccard(a, b):
@@ -34,6 +34,7 @@ def scoreUrlOverlap(query, url):
 def runScript(query, url):
     # print scoreUrlOverlap(query,url)
     return scoreUrlOverlap(query, url)
+
 
 # when executing as script
 if __name__ == '__main__':

@@ -8,7 +8,6 @@ from urlparse import urlparse
 
 
 def create_history_db(input_db):
-
     flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
     home_directory = os.path.expanduser('~')
     os.walk(home_directory)
@@ -58,14 +57,8 @@ def create_history_db(input_db):
                         continue
                 # Commit valid url
                 if exclude_flag is False:
-                    history_cur.execute("INSERT INTO History(URL) VALUES (?)", (url, ))
+                    history_cur.execute("INSERT INTO History(URL) VALUES (?)", (url,))
                     history_con.commit()
 
     history_con.close()
     firefox_con.close()
-
-
-
-
-
-

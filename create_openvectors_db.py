@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-from app.models import OpenVectors
+
 from app import db
+from app.models import OpenVectors
+
 
 def create_openvectors_db():
     db.drop_all(bind='openvectors')
@@ -25,5 +27,3 @@ def create_openvectors_db():
 
 if __name__ == '__main__':
     create_openvectors_db()
-
-

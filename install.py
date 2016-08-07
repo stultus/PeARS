@@ -4,8 +4,6 @@ import os
 import platform
 import subprocess
 
-
-
 # Identify the type of operating system for install packages
 OS = platform.dist()[0].lower()
 
@@ -15,9 +13,8 @@ elif OS == "ubuntu" or OS == "debian":
     install = "sudo apt-get install "
 else:
     print "Automatic installation is not available on your system.\n" \
-        "Please install the system using a description in the 'README.md'"
+          "Please install the system using a description in the 'README.md'"
     exit(1)
-
 
 # It was installed packages: 'pip' and 'virtualenv'
 with open("/dev/null", "a") as null:
@@ -28,15 +25,12 @@ with open("/dev/null", "a") as null:
     if subprocess.call(["which", "virtualenv"], stdout=null) is 1:
         os.system(install + "virtualenv" + " -y")
 
-
 # Configure virtual environment ('virtualenv')
 os.system("virtualenv pears_env")
-
 
 # Installing dependencies
 os.system("cd pears_env/bin/ ; sudo -H pip2 install -r ../../requirements.txt")
 os.system("cd ../../")
-
 
 # Get the semantic space
 os.system("wget http://clic.cimec.unitn.it/~aurelie.herbelot/openvectors.dump.bz2")

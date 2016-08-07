@@ -1,14 +1,8 @@
 import textblob_aptagger
-from textblob import TextBlob, Word
-#########################################
-# Start POS tagger
-#########################################
+from textblob import Word
+
 
 pt = textblob_aptagger.PerceptronTagger()
-
-#######################################
-# Tag query
-#######################################
 
 
 def tagQuery(query):
@@ -19,11 +13,10 @@ def tagQuery(query):
             for word in tags:
                 surface = word[0]
                 pos = word[1]
-#				print word
                 try:
                     if pos[0] == 'N' or pos[0] == 'V':
                         tag = Word(surface).lemmatize(
-                            pos[0].lower()) + "_" + pos[0]
+                                pos[0].lower()) + "_" + pos[0]
                     else:
                         if pos[0] == 'J':
                             # Hack -- convert pos J to pos A because that's how
