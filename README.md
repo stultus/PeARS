@@ -63,7 +63,7 @@ You can use script or the automatic installation instruc below. Automatic instal
 
    then
 
-   `./uncompress_db openvectors.dump.bz2`
+   `python uncompress_db.py openvectors.dump.bz2`
 
 
 ###Running the PeARS search engine
