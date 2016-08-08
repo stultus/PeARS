@@ -12,7 +12,7 @@ from operator import itemgetter
 from numpy import *
 
 import getUrlOverlap
-from .utils import mkQueryDist, cosine_similarity, print_timing
+from .utils import query_distribution, cosine_similarity, print_timing
 
 
 def scoreDS(query_dist, url_dict):

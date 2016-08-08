@@ -6,21 +6,20 @@ from flask import render_template, request
 import findBestPears
 import scorePages
 from app import app
-from app.utils import readPears, mkQueryDist, loadEntropies
+from app.utils import read_pears, query_distribution, load_entropies
 
 
 @app.route('/')
 @app.route('/index')
 def index():
     pages = []
-    entropies_dict = loadEntropies()
+    entropies_dict = load_entropies()
     query = request.args.get('q')
     if not query:
         return render_template("index.html")
     else:
-        # lemmatised_query = lemmatiseQuery(query)
-        query_dist = mkQueryDist(query, entropies_dict)
-        pears_ids = readPears()
+        query_dist = query_distribution(query, entropies_dict)
+        pears_ids = read_pears()
         pears = findBestPears.runScript(query_dist, pears_ids)
         if len(pears) == 0:
             pears = [['nopear',
