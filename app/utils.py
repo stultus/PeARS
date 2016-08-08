@@ -1,10 +1,7 @@
-
 import os
-import pdb
-import re
 import time
 
-from numpy import *
+from numpy import linalg, array, dot, sqrt, math
 
 from .models import OpenVectors
 
@@ -34,71 +31,64 @@ def cosine_similarity(peer_v, query_v):
     return num / (sqrt(den_a) * sqrt(den_b))
 
 
-def loadEntropies():
-    global root_dir
+def load_entropies(entropies_file='demo/ukwac.entropy.txt'):
     entropies_dict = {}
-    entropies_file = os.path.join(
-            root_dir, "demo",
-            "ukwac.entropy.txt")
-    f = open(entropies_file, "r")
-    for l in f:
-        l = l.rstrip('\n')
-        fields = l.split('\t')
-        w = fields[0].lower()
-        # Must have this cos lower() can match two instances of the same word in the list
-        if w.isalpha() and w not in entropies_dict:
-            entropies_dict[w] = float(fields[1])
-    f.close()
+    with open(entropies_file, "r") as entropies:
+        for line in entropies:
+            word, score = line.split('\t')
+            word = word.lower()
+            # Must have this cos lower() can match two instances of the same word in the list
+            if word.isalpha() and word not in entropies_dict:
+                entropies_dict[word] = float(score)
+
     return entropies_dict
 
 
-def mkQueryDist(query, entropies):
+def query_distribution(query, entropies):
     """ Make distribution for query """
     words = query.rstrip('\n').split()
 
     # Only retain arguments which are in the distributional semantic space
     vecs_to_add = []
-    for w in words:
-        word = OpenVectors.query.filter(OpenVectors.word == w).first()
+    for word in words:
+        word = OpenVectors.query.filter(OpenVectors.word == word).first()
         if word:
             vecs_to_add.append(word)
         else:
-            w = w[0].upper() + w[1:]  # Did user carelessly forget to capitalise a proper noun?
-            word = OpenVectors.query.filter(OpenVectors.word == w).first()
+            word = word[0].upper() + word[1:]  # Did user carelessly forget to capitalise a proper noun?
+            word = OpenVectors.query.filter(OpenVectors.word == word).first()
             if word:
                 vecs_to_add.append(word)
 
     vbase = array([])
     # Add vectors together
-    if len(vecs_to_add) > 0:
+    if vecs_to_add:
         # Take first word in vecs_to_add to start addition
         vbase = array([float(i) for i in vecs_to_add[0].vector.split(',')])
-        for item in range(1, len(vecs_to_add)):
-            w = vecs_to_add[item]
-            if w in entropies and math.log(entropies[w] + 1) > 0:
-                weight = float(1) / float(math.log(entropies[w] + 1))
-                vbase = vbase + weight * array([float(i) for i in vecs_to_add[item].vector.split(',')])
+        for vec in vecs_to_add[1:]:
+            if vec.word in entropies and math.log(entropies[vec.word] + 1) > 0:
+                weight = float(1) / float(math.log(entropies[vec.word] + 1))
+                vbase = vbase + weight * array([float(i) for i in vec.vector.split(',')])
             else:
-                vbase = vbase + array([float(i) for i in vecs_to_add[item].vector.split(',')])
+                vbase = vbase + array([float(i) for i in vec.vector.split(',')])
 
     vbase = normalise(vbase)
     return vbase
 
 
-def readPears():
+def read_pears():
     shared_pears_ids = os.path.join(
             os.path.dirname(__file__),
             "shared_pears_ids.txt")
 
     pears_ids = {}
-    sp = open(shared_pears_ids, 'r')
-    for l in sp:
-        l = l.rstrip('\n')
-        items = l.split()
-        pear_name = root_dir + "/" + items[0]
-        pear_dist = [float(i) for i in items[1:]]
-        pears_ids[pear_name] = pear_dist
-    sp.close()
+    with open(shared_pears_ids, 'r') as pears_file:
+        for line in pears_file:
+            items = line.split()
+            pear_name = root_dir + "/" + items[0]
+            pear_dist = [float(i) for i in items[1:]]
+            pears_ids[pear_name] = pear_dist
+
     return pears_ids
 
 
