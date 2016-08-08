@@ -66,7 +66,6 @@ def query_distribution(query, entropies):
         # Take first word in vecs_to_add to start addition
         vbase = array([float(i) for i in vecs_to_add[0].vector.split(',')])
         for vec in vecs_to_add[1:]:
-            print(vec.word in entropies)
             if vec.word in entropies and math.log(entropies[vec.word] + 1) > 0:
                 weight = float(1) / float(math.log(entropies[vec.word] + 1))
                 vbase = vbase + weight * array([float(i) for i in vec.vector.split(',')])
