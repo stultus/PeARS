@@ -47,8 +47,8 @@ def find_best_pears(query_dist, pear_vectors, num_best_pears=5):
                 pears_scores[pear_name] = score
                 print(pear_name, score)
 
-        pears = [pear_name for pear_name, pear_score in
-                 sorted(pears_scores.iteritems(), key=lambda x: x[1], reverse=True)[:num_best_pears]]
-        best_pears_data = [get_pear_data(pear) for pear in pears]
+        best_pears = [pear_name for pear_name, pear_score in
+                      sorted(pears_scores.iteritems(), key=lambda x: x[1], reverse=True)[:num_best_pears]]
+        best_pears_data = [get_pear_data(pear) for pear in best_pears]
 
     return best_pears_data
