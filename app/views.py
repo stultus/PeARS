@@ -3,7 +3,7 @@
 
 from flask import render_template, request
 
-import findBestPears
+import best_pears
 import scorePages
 from app import app
 from app.utils import read_pears, query_distribution, load_entropies
@@ -20,7 +20,7 @@ def index():
     else:
         query_dist = query_distribution(query, entropies_dict)
         pears_ids = read_pears()
-        pears = findBestPears.runScript(query_dist, pears_ids)
+        pears = best_pears.find_best_pears(query_dist, pears_ids)
         if len(pears) == 0:
             pears = [['nopear',
                       'Sorry... no pears found :(',
