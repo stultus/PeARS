@@ -31,7 +31,7 @@ def index():
             for p in pears:
                 pear_names.append(p[0])
                 print p
-                pages = scorePages.runScript(query, query_dist, pear_names)
+            pages = scorePages.runScript(query, query_dist, pear_names)
 
         # '''remove the following lines after testing'''
         # pages = [['http://test.com', 'test']]
