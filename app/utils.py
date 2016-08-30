@@ -51,14 +51,14 @@ def query_distribution(query, entropies):
     # Only retain arguments which are in the distributional semantic space
     vecs_to_add = []
     for word in words:
-        word = OpenVectors.query.filter(OpenVectors.word == word).first()
-        if word:
-            vecs_to_add.append(word)
+        word_db = OpenVectors.query.filter(OpenVectors.word == word).first()
+        if word_db:
+            vecs_to_add.append(word_db)
         else:
             word = word[0].upper() + word[1:]  # Did user carelessly forget to capitalise a proper noun?
-            word = OpenVectors.query.filter(OpenVectors.word == word).first()
-            if word:
-                vecs_to_add.append(word)
+            word_db = OpenVectors.query.filter(OpenVectors.word == word).first()
+            if word_db:
+                vecs_to_add.append(word_db)
 
     vbase = array([])
     # Add vectors together
