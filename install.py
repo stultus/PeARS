@@ -26,14 +26,8 @@ def setup():
         if subprocess.call(["which", "virtualenv"], stdout=null) is 1:
             os.system(install + "virtualenv" + " -y")
 
-    # Configure virtual environment ('virtualenv')
-    if not hasattr(sys, 'real_prefix'):
-        if not os.path.isdir('pears_env'):
-            os.system("virtualenv pears_env")
-
     # Installing dependencies
-    os.system("cd pears_env/bin/ ; sudo -H pip2 install -r ../../requirements.txt")
-    os.system("cd ../../")
+    os.system("sudo pip install -r requirements.txt")
 
     # Get the semantic space
     os.system("wget http://clic.cimec.unitn.it/~aurelie.herbelot/openvectors.dump.bz2")
