@@ -34,4 +34,4 @@ os.system("cd ../../")
 
 # Get the semantic space
 os.system("wget http://clic.cimec.unitn.it/~aurelie.herbelot/openvectors.dump.bz2")
-os.system("./uncompress_db openvectors.dump.bz2")
+os.system("./uncompress_db.py openvectors.dump.bz2")
