@@ -146,6 +146,10 @@ proceeding further.\nContinue? (y/n)\n")
     if check == "n":
         sys.exit(1)
 
+    index_url(urls_to_process, outfile)
+    db.close()
+
+def index_url(urls_to_process, outfile):
     with open(outfile, 'w') as urlfile:
       for url in urls_to_process:
         extract_from_url(url)
@@ -159,7 +163,6 @@ proceeding further.\nContinue? (y/n)\n")
           urlfile.write("</doc>\n")
     urlfile.close()
 
-    db.close()
 
     # Output status code stats
     print "\n---\nStatus code stats:\n---\n"

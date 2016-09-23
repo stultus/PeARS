@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import render_template, request, Blueprint
+import requests, json
 
 from . import searcher
 
@@ -9,6 +10,14 @@ from pears import best_pears
 from pears import scorePages
 from pears.utils import read_pears, query_distribution, load_entropies
 
+def get_result_from_dht(query_dist):
+    url = 'http://localhost:8080'
+    headers = {'content-type': 'application/json', 'Accept-Charset':
+            'UTF-8', 'Connection': 'close'}
+    query_str  = ' '.join([each.strip('\n\[\]') for each in str(query_dist).split(' ')])
+    r = requests.post(url, data=json.dumps(query_str), headers=headers)
+    result = [r.split('\n')[-1]] if r else []
+    return result
 
 @searcher.route('/')
 @searcher.route('/index')
@@ -20,8 +29,9 @@ def index():
         return render_template("index.html")
     else:
         query_dist = query_distribution(query, entropies_dict)
-        pears_ids = read_pears()
-        pears = best_pears.find_best_pears(query_dist, pears_ids)
+        pears = get_result_from_dht(query_dist)
+        # pears_ids = read_pears()
+        # pears = best_pears.find_best_pears(query_dist, pears_ids)
         if len(pears) == 0:
             pears = [['nopear',
                       'Sorry... no pears found :(',
