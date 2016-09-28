@@ -1,16 +1,17 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from flask import render_template, request
+from flask import render_template, request, Blueprint
 
-import best_pears
-import scorePages
-from app import app
-from app.utils import read_pears, query_distribution, load_entropies
+from . import searcher
+
+from pears import best_pears
+from pears import scorePages
+from pears.utils import read_pears, query_distribution, load_entropies
 
 
-@app.route('/')
-@app.route('/index')
+@searcher.route('/')
+@searcher.route('/index')
 def index():
     pages = []
     entropies_dict = load_entropies()
@@ -30,7 +31,6 @@ def index():
             pear_names = []
             for p in pears:
                 pear_names.append(p[0])
-                print p
             pages = scorePages.runScript(query, query_dist, pear_names)
 
         # '''remove the following lines after testing'''
