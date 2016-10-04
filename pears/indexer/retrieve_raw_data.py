@@ -6,6 +6,7 @@ import csv
 from bs4 import BeautifulSoup
 import os
 import re
+import mkLocalProfile
 
 # Output a big file (csv) or a database where documents
 # are neatly separated, and the following information is available:
@@ -148,6 +149,7 @@ proceeding further.\nContinue? (y/n)\n")
 
     index_url(urls_to_process, outfile)
     db.close()
+    mkLocalProfile.runScript(outfile)
 
 def index_url(urls_to_process, outfile):
     with open(outfile, 'w') as urlfile:

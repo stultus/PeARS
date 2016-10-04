@@ -8,8 +8,8 @@ import re
 import sys
 
 import numpy as np
-from utils import load_entropies, normalise, cosine_similarity,\
-doc_distribution, print_array
+from pears.utils import load_entropies, normalise, cosine_similarity
+# doc_distribution, print_array
 
 num_dimensions = 400
 stopwords = ["", "(", ")", "a", "about", "an", "and", "are", "around", "as", "at", "away", "be", "become", "became",
@@ -91,7 +91,7 @@ def runScript(infile, out):
                 v = weightFile(buff)
                 # s = mkVector(v)
                 print buff
-                s = doc_distribution(unicode(buff), entropies_dict, v)
+                # s = doc_distribution(unicode(buff), entropies_dict, v)
                 docdists.write(url + " " + print_array(s) + "\n")
                 buff = ""
                 line_counter = 0
