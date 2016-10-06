@@ -3,6 +3,7 @@
 
 from flask import render_template, request, Blueprint
 import requests, json
+from ast import literal_eval
 
 from . import searcher
 
@@ -16,7 +17,7 @@ def get_result_from_dht(query_dist):
             'UTF-8', 'Connection': 'close'}
     query_str  = ' '.join([each.strip('\n\[\]') for each in str(query_dist).split(' ')])
     r = requests.post(url, data=json.dumps(query_str), headers=headers)
-    result = [r.split('\n')[-1]] if r else []
+    result = [r.text.split('\n')[-1]] if r else []
     return result
 
 @searcher.route('/')
@@ -30,18 +31,15 @@ def index():
     else:
         query_dist = query_distribution(query, entropies_dict)
         pears = get_result_from_dht(query_dist)
-        # pears_ids = read_pears()
-        # pears = best_pears.find_best_pears(query_dist, pears_ids)
-        if len(pears) == 0:
+        pear_profiles = read_pears(pears)
+        pear_details = best_pears.find_best_pears(query_dist, pear_profiles)
+        if len(pear_details) == 0:
             pears = [['nopear',
                       'Sorry... no pears found :(',
                       './static/pi-pic.png']]
-            print pears
         else:
-            pear_names = []
-            for p in pears:
-                pear_names.append(p[0])
-            pages = scorePages.runScript(query, query_dist, pear_names)
+            pear_ips = pear_details.keys()
+            pages = scorePages.runScript(query, query_dist, pear_ips)
 
         # '''remove the following lines after testing'''
         # pages = [['http://test.com', 'test']]

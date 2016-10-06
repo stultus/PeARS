@@ -5,9 +5,10 @@ import sys
 
 import numpy as np
 from scipy.spatial import distance
-from pears.models import OpenVectors
+from pears.models import OpenVectors, Urls, Profile
 import runDistSemWeighted
 from pears.utils import normalise, cosine_similarity
+from pears import db
 
 stopwords = ["", "i", "a", "about", "an", "and", "each", "are", "as", "at", "be", "are", "were", "being", "by", "do",
              "does", "did", "for", "from", "how", "in", "is", "it", "its", "make", "made", "of", "on", "or", "s",
@@ -90,20 +91,17 @@ def coherence(vecs):
     return coh
 
 
-def computePearDist(pear, url_dist):
+def computePearDist(pear):
     vbase = np.zeros(num_dimensions)
     vecs_for_coh = []  # Store vectors for this user in order to compute coherence
     # Open document distributions file
-    doc_dists = open(url_dist, 'r')
-    for l in doc_dists:
-        l = l.rstrip('\n')
-        doc_dist = l.split()[1:]
+    urls = Urls.query.all()
+    for l in urls:
+        doc_dist = filter(None, l.dists.split(' '))
         vdocdist = np.array([float(i) for i in doc_dist])
         vbase = vbase + vdocdist
-        # print vdocdist[:10]
         if np.linalg.norm(vdocdist) > 0.0:
             vecs_for_coh.append(vdocdist)
-    doc_dists.close()
 
     vbase = normalise(vbase)
     # Make string version of distribution
@@ -119,22 +117,19 @@ def computePearDist(pear, url_dist):
 
 
 def createProfileFile(pear, pear_dist, topics_s, coh):
-    profile = open("./local-history/profile.txt", 'w')
-    profile.write("name = " + pear + "\n")
-    profile.write("topics = " + topics_s + "\n")
-    profile.write("coherence = " + str(coh) + "\n")
-    profile.write("pear_id:" + pear_dist + "\n")
-    profile.close()
+    profile = Profile.query.first()
+    profile.topics = topics_s
+    profile.coherence = str(coh)
+    profile.vector = pear_dist
+    db.session.commit()
 
 
-def runScript(outfile):
+def runScript():
     readDM()
-    url_dist = "./local-history/urls.dists.txt"
-    runDistSemWeighted.runScript(outfile, url_dist)
+    runDistSemWeighted.runScript(dm_dict)
     print "Computing pear for local history..."
-    # try:
-    user="localhistory"
-    v, print_v, coh = computePearDist(user, url_dist)
+    user = Profile.query.first().name
+    v, print_v, coh = computePearDist(user)
     topics, topics_s = sim_to_matrix(v, 20)
     createProfileFile(user, print_v, topics_s, coh)
 

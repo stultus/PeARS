@@ -9,7 +9,8 @@ import sys
 
 import numpy as np
 from pears.utils import load_entropies, normalise, cosine_similarity
-# doc_distribution, print_array
+from pears.models import Urls
+from pears import app, db
 
 num_dimensions = 400
 stopwords = ["", "(", ")", "a", "about", "an", "and", "are", "around", "as", "at", "away", "be", "become", "became",
@@ -18,7 +19,6 @@ stopwords = ["", "(", ")", "a", "about", "an", "and", "are", "around", "as", "at
              "on", "or", "s", "she", "some", "that", "the", "their", "there", "this", "these", "those", "to", "under",
              "was", "were", "what", "when", "where", "which", "who", "will", "with", "you", "your"]
 
-dm_dict = {}  # Dictionary to store dm file
 doc_dists = []  # Which files already have a distribution
 entropies_dict=load_entropies()
 
@@ -39,7 +39,7 @@ def weightFile(buff):
     return word_dict
 
 
-def mkVector(word_dict):
+def mkVector(word_dict, dm_dict):
     """ Make vectors from weights """
     # Initialise vbase and doc_dist vectors
     vbase = np.zeros(num_dimensions)
@@ -65,38 +65,18 @@ def mkVector(word_dict):
     return doc_dist_str
 
 
-def runScript(infile, out):
-    docdists = open(out, "w")
-
-    f = open(infile, 'r')
+def runScript(dm_dict):
+    urls = Urls.query.all()
     buff = ""
     line_counter = 0
-    for l in f:
-        l = l.rstrip('\n')
-        if "<doc" in l:
-            doc_id = ""
-            m = re.search("<doc url=\"(.*)\".*title=\"(.*)\"", l)
-            url = m.group(1)
-            title = m.group(2)
-            print url
-        else:
-            if "</doc" not in l:
-                # Ignore lines after number 20 and those with one word only
-                if line_counter < 20: #and len(l.split()) > 1:
-                    buff += l + " "
-                    line_counter += 1
-                else:
-                    continue
-            else:
-                v = weightFile(buff)
-                # s = mkVector(v)
-                print buff
-                # s = doc_distribution(unicode(buff), entropies_dict, v)
-                docdists.write(url + " " + print_array(s) + "\n")
-                buff = ""
-                line_counter = 0
-    f.close()
-    docdists.close()
+    for l in urls:
+        url = l.url
+        title = l.title
+        buff = l.body
+        v = weightFile(buff)
+        s = mkVector(v, dm_dict)
+        l.dists = s
+    db.session.commit()
 
 
 # when executing as script

@@ -1,9 +1,9 @@
-import os
-import time
+import os, cStringIO
+import time, requests, ipgetter, numpy
 
 from numpy import linalg, array, dot, sqrt, math
 
-from .models import OpenVectors
+from .models import OpenVectors, Profile
 
 stopwords = ["", "(", ")", "a", "about", "an", "and", "are", "around", "as", "at", "away", "be", "become", "became",
              "been", "being", "by", "did", "do", "does", "during", "each", "for", "from", "get", "have", "has", "had",
@@ -76,20 +76,18 @@ def query_distribution(query, entropies):
     return vbase
 
 
-def read_pears():
-    shared_pears_ids = os.path.join(
-            os.path.dirname(__file__),
-            "shared_pears_ids.txt")
+def read_pears(pears):
+    my_ip = ipgetter.myip()
+    pears_dict = {}
+    for ip in pears:
+        if ip == my_ip:
+            p = Profile.query.first().vector
+        else:
+            p = requests.get("http://{}:5000/api/profile".format(ip)).text
+        val = cStringIO.StringIO(str(p))
+        pears_dict[ip] = numpy.loadtxt(val)
 
-    pears_ids = {}
-    with open(shared_pears_ids, 'r') as pears_file:
-        for line in pears_file:
-            items = line.split()
-            pear_name = root_dir + "/" + items[0]
-            pear_dist = [float(i) for i in items[1:]]
-            pears_ids[pear_name] = pear_dist
-
-    return pears_ids
+    return pears_dict
 
 
 def print_timing(func):

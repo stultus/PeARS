@@ -7,6 +7,8 @@ from bs4 import BeautifulSoup
 import os
 import re
 import mkLocalProfile
+from pears.models import Urls
+from pears import db
 
 # Output a big file (csv) or a database where documents
 # are neatly separated, and the following information is available:
@@ -54,18 +56,17 @@ def write_urls_to_process(db_urls, num_pages, ignore_list):
 
   urls_to_process = []
   i = 0
-  urlsfile = open("./local-history/urls.txt", 'w')
   for url_str in db_urls:
-    url = url_str[1]
-    if i < num_pages:
-      if not any( i in url for i in ignore_list):
-        urlsfile.write(url+"\n")
-        urls_to_process.append(url)
-        i += 1
-    else:
-      break
-  urlsfile.close()
-  return urls_to_process
+      url = url_str[1]
+      if i < num_pages:
+          if not any( i in url for i in ignore_list):
+              u = Urls(url=url)
+              db.session.add(u)
+              db.session.commit()
+              i += 1
+      else:
+        break
+  return
 
 
 def extract_from_url(url):
@@ -120,7 +121,7 @@ def extract_from_url(url):
         print "Error - %s" % error
 
 
-def runScript(num_pages, outfile):
+def runScript(num_pages):
     ignore_list = mk_ignore()
     # [TODO] Set the firefox path here via config file
     HISTORY_DB = get_firefox_history_db(home_directory)
@@ -136,34 +137,31 @@ def runScript(num_pages, outfile):
     cursor.execute("SELECT * FROM 'moz_places' ORDER BY visit_count DESC")
     rows = cursor.fetchall()
 
-    urls_to_process=write_urls_to_process(rows, num_pages, ignore_list)
+    write_urls_to_process(rows, num_pages, ignore_list)
 
-    check = raw_input("\nAll URLS to be processed have been written in \
-./local-history/urls.txt. You can check this file before \
-proceeding further.\nContinue? (y/n)\n")
-    while check not in ["y", "n"]:
-        check = raw_input("Please press y or n.")
+    # check = raw_input("\nAll URLS to be processed have been written in \
+# ./local-history/urls.txt. You can check this file before \
+# proceeding further.\nContinue? (y/n)\n")
+    # while check not in ["y", "n"]:
+        # check = raw_input("Please press y or n.")
 
-    if check == "n":
-        sys.exit(1)
+    # if check == "n":
+        # sys.exit(1)
 
-    index_url(urls_to_process, outfile)
+    index_url()
     db.close()
-    mkLocalProfile.runScript(outfile)
+    mkLocalProfile.runScript()
 
-def index_url(urls_to_process, outfile):
-    with open(outfile, 'w') as urlfile:
-      for url in urls_to_process:
-        extract_from_url(url)
-      for s in drows:
-          title = unicode(s[0]).encode("ascii", 'ignore')
-          url = unicode(s[1]).encode("ascii", 'ignore')
-          body = unicode(s[2]).encode("ascii", 'ignore')
-          print title, url
-          urlfile.write("<doc url=\""+url+"\" title=\""+title+"\">\n")
-          urlfile.write(body+"\n")
-          urlfile.write("</doc>\n")
-    urlfile.close()
+def index_url():
+    urls_to_process = Urls.query.all()
+    print urls_to_process
+    for url in urls_to_process:
+        extract_from_url(url.url)
+        for s in drows:
+            url.title = unicode(s[0]).encode("ascii", 'ignore')
+            url.url = unicode(s[1]).encode("ascii", 'ignore')
+            url.body = unicode(s[2]).encode("ascii", 'ignore')
+    db.session.commit()
 
 
     # Output status code stats
