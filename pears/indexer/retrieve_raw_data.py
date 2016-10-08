@@ -60,10 +60,13 @@ def write_urls_to_process(db_urls, num_pages, ignore_list):
       url = url_str[1]
       if i < num_pages:
           if not any( i in url for i in ignore_list):
-              u = Urls(url=url)
-              db.session.add(u)
-              db.session.commit()
-              i += 1
+              try:
+                  u = Urls(url=url)
+                  db.session.add(u)
+                  db.session.commit()
+                  i += 1
+              except:
+                  continue
       else:
         break
   return

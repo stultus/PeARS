@@ -9,7 +9,7 @@ class OpenVectors(db.Model):
 
 class Urls(db.Model):
     id = db.Column(db.Integer, primary_key = True)
-    url = db.Column(db.UnicodeText(), unique=True)
+    url = db.Column(db.UnicodeText())
     body = db.Column(db.UnicodeText())
     title = db.Column(db.UnicodeText())
     dists = db.Column(db.String(7000))

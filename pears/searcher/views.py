@@ -31,15 +31,18 @@ def index():
     else:
         query_dist = query_distribution(query, entropies_dict)
         pears = get_result_from_dht(query_dist)
-        pear_profiles = read_pears(pears)
-        pear_details = best_pears.find_best_pears(query_dist, pear_profiles)
-        if len(pear_details) == 0:
+        pear_details = []
+        pages = []
+        if pears:
+            pear_profiles = read_pears(pears)
+            pear_details = best_pears.find_best_pears(query_dist, pear_profiles)
+            pear_ips = pear_details.keys()
+            pages = scorePages.runScript(query, query_dist, pear_ips)
+        if not pear_details or not pages:
             pears = [['nopear',
                       'Sorry... no pears found :(',
                       './static/pi-pic.png']]
-        else:
-            pear_ips = pear_details.keys()
-            pages = scorePages.runScript(query, query_dist, pear_ips)
+            scorePages.ddg_redirect(query)
 
         # '''remove the following lines after testing'''
         # pages = [['http://test.com', 'test']]

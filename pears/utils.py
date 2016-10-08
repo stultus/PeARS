@@ -3,7 +3,8 @@ import time, requests, ipgetter, numpy
 
 from numpy import linalg, array, dot, sqrt, math
 
-from .models import OpenVectors, Profile
+from .models import OpenVectors
+from pears import profile
 
 stopwords = ["", "(", ")", "a", "about", "an", "and", "are", "around", "as", "at", "away", "be", "become", "became",
              "been", "being", "by", "did", "do", "does", "during", "each", "for", "from", "get", "have", "has", "had",
@@ -81,7 +82,7 @@ def read_pears(pears):
     pears_dict = {}
     for ip in pears:
         if ip == my_ip:
-            p = Profile.query.first().vector
+            p = profile.vector
         else:
             p = requests.get("http://{}:5000/api/profile".format(ip)).text
         val = cStringIO.StringIO(str(p))

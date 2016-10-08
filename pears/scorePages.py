@@ -72,6 +72,16 @@ def bestURLs(doc_scores):
     return best_urls
 
 
+def ddg_redirect(query):
+    print "No suitable pages found."
+    duckquery = ""
+    for w in query.rstrip('\n').split():
+        duckquery = duckquery + w + "+"
+    webbrowser.open_new_tab(
+            "https://duckduckgo.com/?q=" +
+            duckquery.rstrip('+'))
+    return
+
 def output(best_urls, query, url_wordclouds):
     results = []
     # If documents matching the query were found on the pear network...
@@ -81,17 +91,7 @@ def output(best_urls, query, url_wordclouds):
 
     # Otherwise, open duckduckgo and send the query there
     else:
-        print "No suitable pages found."
-        duckquery = ""
-        for w in query.rstrip('\n').split():
-            duckquery = duckquery + w + "+"
-        webbrowser.open_new_tab(
-                "https://duckduckgo.com/?q=" +
-                duckquery.rstrip('+'))
-        link_snippet_pair = [
-            "###", "No suitable recommendation. You were redirected to duckduckgo."]
-        results.append(link_snippet_pair)
-
+        results = []
     return results
 
 

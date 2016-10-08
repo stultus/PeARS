@@ -5,10 +5,10 @@ import sys
 
 import numpy as np
 from scipy.spatial import distance
-from pears.models import OpenVectors, Urls, Profile
+from pears.models import OpenVectors, Urls
 import runDistSemWeighted
 from pears.utils import normalise, cosine_similarity
-from pears import db
+from pears import db, profile
 
 stopwords = ["", "i", "a", "about", "an", "and", "each", "are", "as", "at", "be", "are", "were", "being", "by", "do",
              "does", "did", "for", "from", "how", "in", "is", "it", "its", "make", "made", "of", "on", "or", "s",
@@ -117,10 +117,10 @@ def computePearDist(pear):
 
 
 def createProfileFile(pear, pear_dist, topics_s, coh):
-    profile = Profile.query.first()
     profile.topics = topics_s
     profile.coherence = str(coh)
     profile.vector = pear_dist
+    db.session.add(profile)
     db.session.commit()
 
 
@@ -128,7 +128,7 @@ def runScript():
     readDM()
     runDistSemWeighted.runScript(dm_dict)
     print "Computing pear for local history..."
-    user = Profile.query.first().name
+    user = profile.name
     v, print_v, coh = computePearDist(user)
     topics, topics_s = sim_to_matrix(v, 20)
     createProfileFile(user, print_v, topics_s, coh)
