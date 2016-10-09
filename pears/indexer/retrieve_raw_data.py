@@ -60,13 +60,10 @@ def write_urls_to_process(db_urls, num_pages, ignore_list):
       url = url_str[1]
       if i < num_pages:
           if not any( i in url for i in ignore_list):
-              try:
-                  u = Urls(url=url)
-                  db.session.add(u)
-                  db.session.commit()
-                  i += 1
-              except:
-                  continue
+              u = Urls(url=url)
+              db.session.add(u)
+              db.session.commit()
+              i += 1
       else:
         break
   return
@@ -157,7 +154,6 @@ def runScript(num_pages):
 
 def index_url():
     urls_to_process = Urls.query.all()
-    print urls_to_process
     for url in urls_to_process:
         extract_from_url(url.url)
         for s in drows:

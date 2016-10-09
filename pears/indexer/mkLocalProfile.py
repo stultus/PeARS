@@ -1,7 +1,7 @@
 """ Make user profiles by adding document vectors """
 
 import os
-import sys
+import sys, getpass
 
 import numpy as np
 from scipy.spatial import distance
@@ -92,7 +92,7 @@ def coherence(vecs):
     return coh
 
 
-def computePearDist(pear):
+def computePearDist():
     vbase = np.zeros(num_dimensions)
     vecs_for_coh = []  # Store vectors for this user in order to compute coherence
     # Open document distributions file
@@ -117,11 +117,11 @@ def computePearDist(pear):
     return vbase, dist_str, coh
 
 
-def createProfileFile(pear, pear_dist, topics_s, coh):
-    profile = Profile.query.first()
+def createProfileFile(profile, pear_dist, topics_s, coh):
     profile.topics = topics_s
     profile.coherence = str(coh)
     profile.vector = pear_dist
+    db.session.add(profile)
     db.session.commit()
 
 
@@ -129,10 +129,13 @@ def runScript():
     readDM()
     runDistSemWeighted.runScript(dm_dict)
     print "Computing pear for local history..."
-    user = profile.name
-    v, print_v, coh = computePearDist(user)
+    profile = Profile.query.first()
+    if not profile:
+        user = getpass.getuser()
+        profile = Profile(name=user)
+    v, print_v, coh = computePearDist()
     topics, topics_s = sim_to_matrix(v, 20)
-    createProfileFile(user, print_v, topics_s, coh)
+    createProfileFile(profile, print_v, topics_s, coh)
 
 
 # PERHAPS PEAR NOT FOUND?
