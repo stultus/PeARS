@@ -3,8 +3,7 @@ import time, requests, ipgetter, numpy
 
 from numpy import linalg, array, dot, sqrt, math
 
-from .models import OpenVectors
-from pears import profile
+from .models import OpenVectors, Profile
 
 stopwords = ["", "(", ")", "a", "about", "an", "and", "are", "around", "as", "at", "away", "be", "become", "became",
              "been", "being", "by", "did", "do", "does", "during", "each", "for", "from", "get", "have", "has", "had",
@@ -78,6 +77,7 @@ def query_distribution(query, entropies):
 
 
 def read_pears(pears):
+    profile = Profile.query.first()
     my_ip = ipgetter.myip()
     pears_dict = {}
     for ip in pears:

@@ -1,13 +1,13 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from pears.models import Urls
-from pears import profile
+from pears.models import Urls, Profile
 from . import api
 
 
 @api.route('/api/profile')
 def get_profile():
+    profile = Profile.query.first()
     return profile.vector
 
 @api.route('/api/urls')

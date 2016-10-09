@@ -8,7 +8,8 @@ from scipy.spatial import distance
 from pears.models import OpenVectors, Urls
 import runDistSemWeighted
 from pears.utils import normalise, cosine_similarity
-from pears import db, profile
+from pears import db
+from pears.models import Profile
 
 stopwords = ["", "i", "a", "about", "an", "and", "each", "are", "as", "at", "be", "are", "were", "being", "by", "do",
              "does", "did", "for", "from", "how", "in", "is", "it", "its", "make", "made", "of", "on", "or", "s",
@@ -117,10 +118,10 @@ def computePearDist(pear):
 
 
 def createProfileFile(pear, pear_dist, topics_s, coh):
+    profile = Profile.query.first()
     profile.topics = topics_s
     profile.coherence = str(coh)
     profile.vector = pear_dist
-    db.session.add(profile)
     db.session.commit()
 
 

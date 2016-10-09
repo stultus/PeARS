@@ -13,3 +13,5 @@ wheel==0.24.0
 bs4
 scipy==0.18.1
 lxml==3.6.4
+sqlalchemy-migrate==0.10.0
+ipgetter==0.6
