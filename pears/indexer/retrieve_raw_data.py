@@ -21,11 +21,12 @@ drows = []
 status_code_freqs = {}
 home_directory = os.path.expanduser('~')
 
-#A small ignore list for sites that don't need indexing.
-ignore=["twitter", "google", "duckduckgo", "bing", "yahoo", "facebook"]
 
 
 def mk_ignore():
+    #A small ignore list for sites that don't need indexing.
+    ignore=["twitter", "google", "duckduckgo", "bing", "yahoo", "facebook",
+            "mail.google.com", "whatsapp", "telegram", "localhost"]
     '''Make ignore list'''
     s = []
     for i in ignore:
@@ -50,22 +51,31 @@ def get_firefox_history_db(in_dir):
     return None
 
 
-def write_urls_to_process(db_urls, num_pages, ignore_list):
+def write_urls_to_process(db_urls, num_pages):
   '''Select and write urls that will be processed, so that user can check the list\
    before proceeding.'''
 
+  ignore_list = mk_ignore()
   urls_to_process = []
   i = 0
   for url_str in db_urls:
       url = url_str[1]
-      if i < num_pages:
+      if i <= num_pages:
           if not any( i in url for i in ignore_list):
-              u = Urls(url=url)
-              db.session.add(u)
-              db.session.commit()
-              i += 1
+              url = url.replace('http://', 'https://').rstrip('/')
+              if url not in urls_to_process:
+                  if "www" not in url:
+                      url_with_www = url.replace("https://", "https://www.")
+                      if url_with_www in urls_to_process:
+                          continue
+                  urls_to_process.append(url)
+                  i += 1
       else:
         break
+  for url in urls_to_process:
+      u = Urls(url=url)
+      db.session.add(u)
+      db.session.commit()
   return
 
 
@@ -122,7 +132,6 @@ def extract_from_url(url):
 
 
 def runScript(num_pages):
-    ignore_list = mk_ignore()
     # [TODO] Set the firefox path here via config file
     HISTORY_DB = get_firefox_history_db(home_directory)
     if HISTORY_DB is None:
@@ -137,7 +146,7 @@ def runScript(num_pages):
     cursor.execute("SELECT * FROM 'moz_places' ORDER BY visit_count DESC")
     rows = cursor.fetchall()
 
-    write_urls_to_process(rows, num_pages, ignore_list)
+    write_urls_to_process(rows, num_pages)
 
     # check = raw_input("\nAll URLS to be processed have been written in \
 # ./local-history/urls.txt. You can check this file before \
