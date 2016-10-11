@@ -52,46 +52,57 @@ def get_firefox_history_db(in_dir):
 
 
 def write_urls_to_process(db_urls, num_pages):
-  '''Select and write urls that will be processed, so that user can check the list\
-   before proceeding.'''
+    '''Select and write urls that will be processed, so that user can check the list\
+    before proceeding.'''
 
-  ignore_list = mk_ignore()
-  urls_to_process = []
-  i = 0
-  for url_str in db_urls:
-      url = url_str[1]
-      if i <= num_pages:
-          if not any( i in url for i in ignore_list):
-              url = url.replace('http://', 'https://').rstrip('/')
-              if url not in urls_to_process:
-                  if "www" not in url:
-                      url_with_www = url.replace("https://", "https://www.")
-                      if url_with_www in urls_to_process:
-                          continue
-                  urls_to_process.append(url)
-                  i += 1
-      else:
-        break
-  for url in urls_to_process:
-      u = Urls(url=url)
-      db.session.add(u)
-      db.session.commit()
-  return
+    ignore_list = mk_ignore()
+    urls_to_process = []
+    i = 0
+    for url_str in db_urls:
+        url = url_str[1]
+        if i <= num_pages:
+            if not any( i in url for i in ignore_list):
+                if not url.startswith('http'):
+                    continue
+                url = url.replace('http://', 'https://').rstrip('/')
+                if url not in urls_to_process:
+                    if "www" not in url:
+                        url_with_www = url.replace("https://", "https://www.")
+                        if url_with_www in urls_to_process:
+                            continue
+                    else:
+                        url_with_www = url
+                    if not db.session.query(Urls).filter(url==url,
+                            url==url_with_www).first():
+                        urls_to_process.append(url)
+                        i += 1
+        else:
+          break
+    return urls_to_process
 
 
 def extract_from_url(url):
     '''From history info, extract url, title and body of page,
     cleaned with BeautifulSoup'''
-    if url.startswith('http'):
-        print url
-    else:
-        return
-
+    drows = []
     try:
         # TODO: Is there any issue in using redirects?
-        req = requests.get(url, allow_redirects=True)
+        try:
+            req = requests.get(url, allow_redirects=True, timeout=20)
+        except (requests.exceptions.SSLError or
+                requests.exceptions.Timeout) as e:
+            print "\nCaught the exception: {0}. Trying with http...\n".format(
+                    str(e))
+            url = url.replace("https", "http")
+            req = requests.get(url, allow_redirects=True)
+        except requests.exceptions.RequestException as e:
+            print "Ignoring {0} because of error {1}\n".format(url,
+                    str(e))
+            return
+        except requests.exceptions.HTTPError as err:
+            print str(err)
+            return
         req.encoding = 'utf-8'
-
         # Gather stats about status codes
         if str(req.status_code) not in status_code_freqs:
             status_code_freqs[str(req.status_code)] = 1
@@ -99,8 +110,8 @@ def extract_from_url(url):
             status_code_freqs[str(req.status_code)] += 1
 
         if req.status_code is not 200:
-            print str(req.url) + ' has a status code of: ' \
-                + str(req.status_code) + ' omitted from database.'
+            print "Warning: "  + str(req.url) + ' has a status code of: ' \
+                + str(req.status_code) + ' omitted from database.\n'
 
         bs_obj = BeautifulSoup(req.text,"lxml")
 
@@ -117,7 +128,7 @@ def extract_from_url(url):
                     body = bs_obj.get_text()
                     pattern = re.compile('(^[\s]+)|([\s]+$)', re.MULTILINE)
                     body_str=re.sub(pattern," ",body)
-                    drows.append([title, url, body_str])
+                    drows = [title, url, body_str]
 
                 if title is None:
                     title = u'Untitled'
@@ -125,6 +136,7 @@ def extract_from_url(url):
                 title = u'Untitled'
             except None:
                 title = u'Untitled'
+        return drows
     # can't connect to the host
     except:
         error = sys.exc_info()[0]
@@ -146,7 +158,7 @@ def runScript(num_pages):
     cursor.execute("SELECT * FROM 'moz_places' ORDER BY visit_count DESC")
     rows = cursor.fetchall()
 
-    write_urls_to_process(rows, num_pages)
+    urls_to_process = write_urls_to_process(rows, num_pages)
 
     # check = raw_input("\nAll URLS to be processed have been written in \
 # ./local-history/urls.txt. You can check this file before \
@@ -157,19 +169,21 @@ def runScript(num_pages):
     # if check == "n":
         # sys.exit(1)
 
-    index_url()
+    index_url(urls_to_process)
     db.close()
     mkLocalProfile.runScript()
 
-def index_url():
-    urls_to_process = Urls.query.all()
+def index_url(urls_to_process):
     for url in urls_to_process:
-        extract_from_url(url.url)
-        for s in drows:
-            url.title = unicode(s[0]).encode("ascii", 'ignore')
-            url.url = unicode(s[1]).encode("ascii", 'ignore')
-            url.body = unicode(s[2]).encode("ascii", 'ignore')
-    db.session.commit()
+        print "Indexing '{}'\n".format(url)
+        drows = extract_from_url(url)
+        if drows:
+            u = Urls(url=url)
+            u.title = unicode(drows[0]).encode("ascii", 'ignore')
+            u.url = unicode(drows[1]).encode("ascii", 'ignore')
+            u.body = unicode(drows[2]).encode("ascii", 'ignore')
+            db.session.add(u)
+            db.session.commit()
 
 
     # Output status code stats
