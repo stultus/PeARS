@@ -100,7 +100,7 @@ def get_pear_urls(ip):
         urls = Urls.query.all()
         return [u.__dict__ for u in urls]
     else:
-        return requests.get("http://192.168.0.107:5000/api/urls").text
+        return requests.get("http://{}:5000/api/urls".format(ip)).text
 
 def runScript(query, query_dist, pears):
     all_url_wordclouds = {}
