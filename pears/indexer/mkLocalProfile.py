@@ -20,18 +20,6 @@ num_dimensions = 400
 dm_dict = {}
 
 
-def readUsers(usernames_file):
-    """ Read list of users """
-    # print "Getting users..."
-    users = []
-    f = open(usernames_file, 'r')
-    for l in f:
-        l = l.rstrip('\n')
-        users.append(l)
-    f.close()
-    return users
-
-
 
 def readDM():
     """ Read dm file (but only top 10,000 words) """
@@ -132,7 +120,7 @@ def runScript():
     profile = Profile.query.first()
     if not profile:
         user = getpass.getuser()
-        profile = Profile(name=user)
+        profile = Profile(name=unicode(user))
     v, print_v, coh = computePearDist()
     topics, topics_s = sim_to_matrix(v, 20)
     createProfileFile(profile, print_v, topics_s, coh)

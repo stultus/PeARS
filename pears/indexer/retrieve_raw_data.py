@@ -178,7 +178,7 @@ def index_url(urls_to_process):
         print "Indexing '{}'\n".format(url)
         drows = extract_from_url(url)
         if drows:
-            u = Urls(url=url)
+            u = Urls(url=unicode(url))
             u.title = unicode(drows[0]).encode("ascii", 'ignore')
             u.url = unicode(drows[1]).encode("ascii", 'ignore')
             u.body = unicode(drows[2]).encode("ascii", 'ignore')

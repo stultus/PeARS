@@ -8,6 +8,7 @@ import sys
 import urllib
 import webbrowser
 from operator import itemgetter
+from pears import db
 
 import numpy
 
@@ -27,9 +28,13 @@ def scoreDS(query_dist, pear_urls):
         d = cStringIO.StringIO(str(doc_dist))
         vector = numpy.loadtxt(d)
         wordclouds[url] = val['wordclouds']
-        score = cosine_similarity(vector, query_dist)
-        if score > 0.3:  # Doc must be good enough
-            DS_scores[url] = doc_dist
+        if vector.all():
+            score = cosine_similarity(vector, query_dist)
+            if score > 0.3:  # Doc must be good enough
+                DS_scores[url] = doc_dist
+        else:
+            Urls.query.filter_by(url=url).delete()
+            db.session.commit()
     return DS_scores, wordclouds
 
 
