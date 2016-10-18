@@ -17,7 +17,8 @@ def get_result_from_dht(query_dist):
             'UTF-8', 'Connection': 'close'}
     query_str  = ' '.join([each.strip('\n\[\]') for each in str(query_dist).split(' ')])
     r = requests.post(url, data=json.dumps(query_str), headers=headers)
-    result = [r.text.split('\n')[-1]] if r else []
+    body = r.text.split('\n')[-1] if r else ''
+    result = body.strip('\'\[\] \t\r').split(',')
     return result
 
 @searcher.route('/')
