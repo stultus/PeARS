@@ -60,7 +60,7 @@ def write_urls_to_process(db_urls, num_pages):
     i = 0
     for url_str in db_urls:
         url = url_str[1]
-        if i <= num_pages:
+        if i < num_pages:
             if not any( i in url for i in ignore_list):
                 if not url.startswith('http'):
                     continue
