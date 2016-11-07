@@ -130,4 +130,4 @@ def runScript():
 
 if __name__ == '__main__':
     # when executing as script
-    runScript("./local-history/documents.txt")
+    runScript()

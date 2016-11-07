@@ -6,19 +6,13 @@ import csv
 from bs4 import BeautifulSoup
 import os
 import re
-import mkLocalProfile
+import runDistSemWeighted
 from pears.models import Urls
 from pears import db
 
-# Output a big file (csv) or a database where documents
-# are neatly separated, and the following information is available:
-# 1) URL of the document, 2) title of the document.
 
-# This is a modified version of retrieve_data.py, written by Bharat Shetty
-# Barkur, itself a modification of Veesa Norman's retrieve_pages.py.
-
+dm_dict = {}
 drows = []
-status_code_freqs = {}
 home_directory = os.path.expanduser('~')
 
 
@@ -50,10 +44,19 @@ def get_firefox_history_db(in_dir):
 
     return None
 
+def readDM():
+    """ Read dm file """
+    # Make dictionary with key=row, value=vector
+    dmlines = [(each.word, each.vector) for each in
+            OpenVectors.query.all()]
+    for l in dmlines:
+            vects = [float(each) for each in l[1].split(',')]
+            dm_dict[l[0]] = normalise(vects)
 
-def write_urls_to_process(db_urls, num_pages):
-    '''Select and write urls that will be processed, so that user can check the list\
-    before proceeding.'''
+
+
+def record_urls_to_process(db_urls, num_pages):
+    '''Select and write urls that will be clustered.'''
 
     ignore_list = mk_ignore()
     urls_to_process = []
@@ -78,6 +81,8 @@ def write_urls_to_process(db_urls, num_pages):
                         i += 1
         else:
           break
+
+
     return urls_to_process
 
 
@@ -103,11 +108,6 @@ def extract_from_url(url):
             print str(err)
             return
         req.encoding = 'utf-8'
-        # Gather stats about status codes
-        if str(req.status_code) not in status_code_freqs:
-            status_code_freqs[str(req.status_code)] = 1
-        else:
-            status_code_freqs[str(req.status_code)] += 1
 
         if req.status_code is not 200:
             print "Warning: "  + str(req.url) + ' has a status code of: ' \
@@ -158,20 +158,10 @@ def runScript(num_pages):
     cursor.execute("SELECT * FROM 'moz_places' ORDER BY visit_count DESC")
     rows = cursor.fetchall()
 
-    urls_to_process = write_urls_to_process(rows, num_pages)
-
-    # check = raw_input("\nAll URLS to be processed have been written in \
-# ./local-history/urls.txt. You can check this file before \
-# proceeding further.\nContinue? (y/n)\n")
-    # while check not in ["y", "n"]:
-        # check = raw_input("Please press y or n.")
-
-    # if check == "n":
-        # sys.exit(1)
+    urls_to_process = record_urls_to_process(rows, num_pages)
 
     index_url(urls_to_process)
     db.close()
-    mkLocalProfile.runScript()
 
 def index_url(urls_to_process):
     for url in urls_to_process:
@@ -182,14 +172,12 @@ def index_url(urls_to_process):
             u.title = unicode(drows[0]).encode("ascii", 'ignore')
             u.url = unicode(drows[1]).encode("ascii", 'ignore')
             u.body = unicode(drows[2]).encode("ascii", 'ignore')
+            u.private = False
             db.session.add(u)
             db.session.commit()
+    runDistSemWeighted.runScript(dm_dict)
 
 
-    # Output status code stats
-    print "\n---\nStatus code stats:\n---\n"
-    for k, v in status_code_freqs.items():
-        print k, v
 
 if __name__ == '__main__':
-    runScript(sys.argv[1], sys.argv[2])
+    runScript(sys.argv[1])
