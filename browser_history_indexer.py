@@ -4,9 +4,6 @@ import os, sys
 
 def index_browser_history():
     num_pages=50
-    if not os.path.isdir("./local-history"):
-      os.mkdir("./local-history/")
-
     retrieve_raw_data.runScript(num_pages)
 
 if __name__=="__main__":

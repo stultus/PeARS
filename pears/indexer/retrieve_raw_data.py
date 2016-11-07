@@ -1,13 +1,14 @@
-import sys
-import sqlite3
-from urllib2 import HTTPError
-import requests
-import csv
-from bs4 import BeautifulSoup
 import os
 import re
+import sys
+import csv
+import sqlite3
+import requests
+import numpy as np
+from urllib2 import HTTPError
+from bs4 import BeautifulSoup
 import runDistSemWeighted
-from pears.models import Urls
+from pears.models import Urls,OpenVectors
 from pears import db
 
 
@@ -44,6 +45,12 @@ def get_firefox_history_db(in_dir):
 
     return None
 
+def normalise(v):
+    norm = np.linalg.norm(v)
+    if norm == 0:
+        return v
+    return v / norm
+
 def readDM():
     """ Read dm file """
     # Make dictionary with key=row, value=vector
@@ -52,8 +59,6 @@ def readDM():
     for l in dmlines:
             vects = [float(each) for each in l[1].split(',')]
             dm_dict[l[0]] = normalise(vects)
-
-
 
 def record_urls_to_process(db_urls, num_pages):
     '''Select and write urls that will be clustered.'''
@@ -142,8 +147,23 @@ def extract_from_url(url):
         error = sys.exc_info()[0]
         print "Error - %s" % error
 
+def index_url(urls_to_process):
+    for url in urls_to_process:
+        print "Indexing '{}'\n".format(url)
+        drows = extract_from_url(url)
+        if drows:
+            u = Urls(url=unicode(url))
+            u.title = unicode(drows[0]).encode("ascii", 'ignore')
+            u.url = unicode(drows[1]).encode("ascii", 'ignore')
+            u.body = unicode(drows[2]).encode("ascii", 'ignore')
+            u.private = False
+            db.session.add(u)
+            db.session.commit()
+    runDistSemWeighted.runScript(dm_dict)
 
 def runScript(num_pages):
+    readDM()
+
     # [TODO] Set the firefox path here via config file
     HISTORY_DB = get_firefox_history_db(home_directory)
     if HISTORY_DB is None:
@@ -163,19 +183,6 @@ def runScript(num_pages):
     index_url(urls_to_process)
     db.close()
 
-def index_url(urls_to_process):
-    for url in urls_to_process:
-        print "Indexing '{}'\n".format(url)
-        drows = extract_from_url(url)
-        if drows:
-            u = Urls(url=unicode(url))
-            u.title = unicode(drows[0]).encode("ascii", 'ignore')
-            u.url = unicode(drows[1]).encode("ascii", 'ignore')
-            u.body = unicode(drows[2]).encode("ascii", 'ignore')
-            u.private = False
-            db.session.add(u)
-            db.session.commit()
-    runDistSemWeighted.runScript(dm_dict)
 
 
 

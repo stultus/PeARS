@@ -48,6 +48,18 @@ def delete_from_db(url):
 
 
 ##################################################
+# Set private/public flag
+##################################################
+
+def set_privacy_flag(url,private_bool):
+  matches = db.session.query(Urls).filter_by(url=url).all()
+  for m in matches:
+    m.private = private_bool
+    db.session.add(m)
+  db.session.commit()
+
+
+##################################################
 # Process lemmatised file
 ##################################################
 
@@ -58,7 +70,6 @@ def processFile(threshold):
 
   for k,v in dm_dict.items():
     if np.linalg.norm(v) != 0:
-      #print k,v
       matrix.append(v)
       urls.append(k)
 
@@ -81,9 +92,9 @@ def processFile(threshold):
     for item in v:
       print item
     user_input = raw_input("Keep? (y/n) ")
-    if user_input != "y":
+    if user_input == "y":
       for item in v:
-        delete_from_db(item)
+        set_privacy_flag(item,True)
 
 
 
@@ -91,9 +102,9 @@ def runScript(threshold):
   readDM()    #Load the semantic space
   clusters=processFile(threshold)
 
-  #remaining_urls = [each.url for each in Urls.query.all()]
-  #for r in remaining_urls:
-  #  print r
+  remaining_urls = [(each.url,each.private) for each in Urls.query.all()]
+  for r in remaining_urls:
+    print r
 
 
   # when executing as script

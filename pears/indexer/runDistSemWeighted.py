@@ -48,7 +48,6 @@ def mkVector(word_dict, dm_dict):
         c = 0
         for w in sorted(word_dict, key=word_dict.get, reverse=True):
             if c < 5:
-                # print w,word_dict[w]
                 if w in dm_dict:
                     vbase = vbase + float(word_dict[w]) * np.array(dm_dict[w])
             c += 1
