@@ -4,6 +4,7 @@ USAGE: called by mkQueryPage.py when user enters a query
 
 import re
 from math import isnan
+import copy
 
 import numpy as np
 
@@ -39,7 +40,7 @@ def find_best_pears(query_dist, pear_details, num_best_pears=5):
     # Calculate score for each pear in relation to the user query
     if len(query_dist) > 0:
         pears_scores = {}
-        pear_data = pear_details
+        pear_data = copy.deepcopy(pear_details)
         for ip, vector in pear_data.iteritems():
             score = cosine_similarity(vector, query_dist)
             if isnan(score):
