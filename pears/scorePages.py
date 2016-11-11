@@ -109,12 +109,13 @@ def get_pear_urls(ip):
 
 def runScript(query, query_dist, pears):
     all_url_wordclouds = {}
+    best_urls = []
     for pear in pears:
         pear_urls = get_pear_urls(pear)
         # document_scores=scoreDocs(query, query_dist, url_dict):	#with URL overlap
         document_scores, wordclouds = scoreDS(query_dist, pear_urls)  # without URL overlap
         all_url_wordclouds.update(wordclouds)
-    best_urls = bestURLs(document_scores)
+        best_urls = bestURLs(document_scores)
     return output(best_urls, query, all_url_wordclouds)
 
 
