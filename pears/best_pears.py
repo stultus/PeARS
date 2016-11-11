@@ -39,7 +39,8 @@ def find_best_pears(query_dist, pear_details, num_best_pears=5):
     # Calculate score for each pear in relation to the user query
     if len(query_dist) > 0:
         pears_scores = {}
-        for ip, vector in pear_details.iteritems():
+        pear_data = pear_details
+        for ip, vector in pear_data.iteritems():
             score = cosine_similarity(vector, query_dist)
             if isnan(score):
                 pear_details.pop(ip)
