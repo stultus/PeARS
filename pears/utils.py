@@ -2,6 +2,7 @@ import os, cStringIO
 import time, requests, ipgetter, numpy
 from sqlalchemy.types import PickleType
 import getpass
+import socket
 
 from numpy import linalg, array, dot, sqrt, math
 
@@ -124,14 +125,25 @@ def query_distribution(query, entropies):
 def read_pears(pears):
     profile = Profile.query.first()
     my_ip = ipgetter.myip()
+    # my_ip =  ([l for l in ([ip for ip in
+        # socket.gethostbyname_ex(socket.gethostname())[2] if not
+        # ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)),
+            # s.getsockname()[0], s.close()) for s in
+            # [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]])
+        # if l][0][0])
     pears_dict = {}
-    for ip in pears:
-        if ip == my_ip:
-            p = profile.vector
-        else:
-            p = requests.get("http://{}:5000/api/profile".format(ip)).text
+    if not pears:
+        p = profile.vector
         val = cStringIO.StringIO(str(p))
-        pears_dict[ip] = numpy.loadtxt(val)
+        pears_dict[my_ip] = numpy.loadtxt(val)
+    else:
+        for ip in pears:
+            if ip == my_ip:
+                p = profile.vector
+            else:
+                p = requests.get("http://{}:5000/api/profile".format(ip)).text
+            val = cStringIO.StringIO(str(p))
+            pears_dict[ip] = numpy.loadtxt(val)
 
     return pears_dict
 

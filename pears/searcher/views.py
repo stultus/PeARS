@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import render_template, request, Blueprint
-import requests, json
+import requests, json, urllib2, ipgetter
 from ast import literal_eval
 
 from . import searcher
@@ -12,6 +12,10 @@ from pears import scorePages
 from pears.utils import read_pears, query_distribution, load_entropies
 
 def get_result_from_dht(query_dist):
+    try:
+        urllib2.urlopen('http://localhost:8080', timeout=1)
+    except urllib2.URLError as err:
+        return False
     url = 'http://localhost:8080'
     headers = {'content-type': 'application/json', 'Accept-Charset':
             'UTF-8', 'Connection': 'close'}
@@ -35,17 +39,17 @@ def index():
         pages = []
         if query_dist.size:
             pears = get_result_from_dht(query_dist)
-            if pears:
-                pear_profiles = read_pears(pears)
-                pear_details = best_pears.find_best_pears(query_dist, pear_profiles)
-                pear_ips = pear_details.keys()
-                pages = scorePages.runScript(query, query_dist, pear_ips)
+            pear_profiles = read_pears(pears)
+            pear_details = best_pears.find_best_pears(query_dist, pear_profiles)
+            pear_ips = pear_details.keys()
+            pages = scorePages.runScript(query, query_dist, pear_ips)
         if not pear_details or not pages:
             pears = [['nopear',
                       'Sorry... no pears found :(',
                       './static/pi-pic.png']]
             scorePages.ddg_redirect(query)
-
+        elif not pears:
+            pears = [ipgetter.myip()]
         # '''remove the following lines after testing'''
         # pages = [['http://test.com', 'test']]
 
