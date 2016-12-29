@@ -8,9 +8,10 @@ import re
 import sys
 
 import numpy as np
-from pears.utils import load_entropies, normalise, cosine_similarity
+from pears.utils import load_entropies, normalise, cosine_similarity, readDM
 from pears.models import Urls
 from pears import app, db
+from ast import literal_eval
 
 num_dimensions = 400
 stopwords = ["", "(", ")", "a", "about", "an", "and", "are", "around", "as", "at", "away", "be", "become", "became",
@@ -19,7 +20,6 @@ stopwords = ["", "(", ")", "a", "about", "an", "and", "are", "around", "as", "at
              "on", "or", "s", "she", "some", "that", "the", "their", "there", "this", "these", "those", "to", "under",
              "was", "were", "what", "when", "where", "which", "who", "will", "with", "you", "your"]
 
-doc_dists = []  # Which files already have a distribution
 entropies_dict=load_entropies()
 
 
@@ -64,8 +64,9 @@ def mkVector(word_dict, dm_dict):
     return doc_dist_str
 
 
-def runScript(dm_dict):
+def runScript():
     urls = Urls.query.all()
+    dm_dict = readDM()
     buff = ""
     line_counter = 0
     for l in urls:

@@ -102,6 +102,12 @@ def output(best_urls, query, url_wordclouds):
 
 def get_pear_urls(ip):
     my_ip = ipgetter.myip()
+    # my_ip =  ([l for l in ([ip for ip in
+        # socket.gethostbyname_ex(socket.gethostname())[2] if not
+        # ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)),
+            # s.getsockname()[0], s.close()) for s in
+            # [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]])
+        # if l][0][0])
     if ip == my_ip:
         urls = Urls.query.all()
         return [u.__dict__ for u in urls]
@@ -110,12 +116,13 @@ def get_pear_urls(ip):
 
 def runScript(query, query_dist, pears):
     all_url_wordclouds = {}
+    best_urls = []
     for pear in pears:
         pear_urls = get_pear_urls(pear)
         # document_scores=scoreDocs(query, query_dist, url_dict):	#with URL overlap
         document_scores, wordclouds = scoreDS(query_dist, pear_urls)  # without URL overlap
         all_url_wordclouds.update(wordclouds)
-    best_urls = bestURLs(document_scores)
+        best_urls = bestURLs(document_scores)
     return output(best_urls, query, all_url_wordclouds)
 
 

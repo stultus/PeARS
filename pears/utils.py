@@ -1,9 +1,13 @@
 import os, cStringIO
 import time, requests, ipgetter, numpy
+from sqlalchemy.types import PickleType
+import getpass
+import socket
 
 from numpy import linalg, array, dot, sqrt, math
 
 from .models import OpenVectors, Profile
+from pears import db
 
 stopwords = ["", "(", ")", "a", "about", "an", "and", "are", "around", "as", "at", "away", "be", "become", "became",
              "been", "being", "by", "did", "do", "does", "during", "each", "for", "from", "get", "have", "has", "had",
@@ -13,6 +17,48 @@ stopwords = ["", "(", ")", "a", "about", "an", "and", "are", "around", "as", "at
 
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
+
+def readDM():
+    """ Read dm file (but only top 10,000 words) """
+    c = 0
+    dm_dict = {}
+    # Make dictionary with key=row, value=vector
+    profile = Profile.query.first()
+    if not profile:
+        user = getpass.getuser()
+        profile = Profile(name=unicode(user))
+    dmlines = [(each.word, each.vector) for each in
+            OpenVectors.query.all()]
+    for l in dmlines:
+        if c < 10000:
+            vects = [float(each) for each in l[1].split(',')]
+            dm_dict[l[0]] = normalise(vects)
+            c += 1
+        else:
+            break
+    return dm_dict
+
+def sim_to_matrix(vec, n):
+    """ Compute similarities and return top n """
+    dm_dict = readDM()
+    cosines = {}
+    for k, v in dm_dict.items():
+        cos = cosine_similarity(numpy.array(vec), numpy.array(v))
+        cosines[k] = cos
+
+    topics = []
+    topics_s = ""
+    c = 0
+    for t in sorted(cosines, key=cosines.get, reverse=True):
+        if c < n:
+            if t.isalpha() and t not in stopwords:
+                # print t,cosines[t]
+                topics.append(t)
+                topics_s += t + " "
+                c += 1
+        else:
+            break
+    return topics, topics_s[:-1]
 
 def normalise(v):
     norm = linalg.norm(v)
@@ -79,6 +125,12 @@ def query_distribution(query, entropies):
 def read_pears(pears):
     profile = Profile.query.first()
     my_ip = ipgetter.myip()
+    # my_ip =  ([l for l in ([ip for ip in
+        # socket.gethostbyname_ex(socket.gethostname())[2] if not
+        # ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)),
+            # s.getsockname()[0], s.close()) for s in
+            # [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]])
+        # if l][0][0])
     pears_dict = {}
     if not pears:
       p = profile.vector
