@@ -21,7 +21,7 @@ home_directory = os.path.expanduser('~')
 def mk_ignore():
     #A small ignore list for sites that don't need indexing.
     ignore=["twitter", "google", "duckduckgo", "bing", "yahoo", "facebook",
-            "mail.google.com", "whatsapp", "telegram", "localhost"]
+            "mail.google.com", "whatsapp", "telegram"]
     '''Make ignore list'''
     s = []
     for i in ignore:
@@ -31,19 +31,18 @@ def mk_ignore():
 
 
 def get_firefox_history_db(in_dir):
-    """Given a home directory it will search it for the places.sqlite file
-    in Mozilla Firefox and return the path. This should work on Windows/
-    Linux"""
-
-    firefox_directory = in_dir + "/.mozilla/firefox"
-    for files in os.walk(firefox_directory):
-        # Build the filename
-        if re.search('places.sqlite', str(os.path.join(files))):
-            history_db = str(os.path.realpath(files[0]) + '/places.sqlite')
-            # print history_db
-            return history_db
-
-    return None
+  """Given a home directory it will search it for the places.sqlite file
+  in Mozilla Firefox and return the path. This should work on Windows/
+  Linux"""
+  print "Finding Firefox DB history..."
+  firefox_directory = in_dir + "/.mozilla/firefox"
+  for files in os.walk(firefox_directory):
+    # Build the filename
+    if re.search('places.sqlite', str(os.path.join(files))):
+      history_db = str(os.path.realpath(files[0]) + '/places.sqlite')
+      # print history_db
+      return history_db
+  return None
 
 def normalise(v):
     norm = np.linalg.norm(v)
@@ -53,22 +52,26 @@ def normalise(v):
 
 def readDM():
     """ Read dm file """
-    # Make dictionary with key=row, value=vector
+    print "Reading vectors..."
     dmlines = [(each.word, each.vector) for each in
             OpenVectors.query.all()]
+    c = 0
     for l in dmlines:
-            vects = [float(each) for each in l[1].split(',')]
-            dm_dict[l[0]] = normalise(vects)
+      #if c < 10000:
+      vects = [float(each) for each in l[1].split(',')]
+      dm_dict[l[0]] = normalise(vects)
+      c+=1
+    print "Finished! Read",c,"vectors..."
 
 def record_urls_to_process(db_urls, num_pages):
     '''Select and write urls that will be clustered.'''
-
+    print "Now writing the",num_pages,"pages to process..."
     ignore_list = mk_ignore()
     urls_to_process = []
     i = 0
     for url_str in db_urls:
-        url = url_str[1]
-        if i <= num_pages:
+        url = unicode(url_str[1])
+        if i < num_pages:
             if not any( i in url for i in ignore_list):
                 if not url.startswith('http'):
                     continue
@@ -83,10 +86,11 @@ def record_urls_to_process(db_urls, num_pages):
                     if not db.session.query(Urls).filter(url==url,
                             url==url_with_www).first():
                         urls_to_process.append(url)
-                        i += 1
+                        print "...writing",url,"..."
+                        i+=1
         else:
+          print "Recorded",len(urls_to_process),"urls..."
           break
-
 
     return urls_to_process
 
@@ -98,12 +102,12 @@ def extract_from_url(url):
     try:
         # TODO: Is there any issue in using redirects?
         try:
-            req = requests.get(url, allow_redirects=True, timeout=20)
+            req = requests.get(unicode(url), allow_redirects=True, timeout=20)
         except (requests.exceptions.SSLError or
                 requests.exceptions.Timeout) as e:
             print "\nCaught the exception: {0}. Trying with http...\n".format(
                     str(e))
-            url = url.replace("https", "http")
+            url = unicode(url.replace("https", "http"))
             req = requests.get(url, allow_redirects=True)
         except requests.exceptions.RequestException as e:
             print "Ignoring {0} because of error {1}\n".format(url,
@@ -118,7 +122,8 @@ def extract_from_url(url):
             print "Warning: "  + str(req.url) + ' has a status code of: ' \
                 + str(req.status_code) + ' omitted from database.\n'
 
-        bs_obj = BeautifulSoup(req.text,"lxml")
+        print "Now parsing with BS..."
+        bs_obj = BeautifulSoup(unicode(req.text),"lxml")
 
         if hasattr(bs_obj.title, 'string') \
                 & (req.status_code == requests.codes.ok):
@@ -130,7 +135,7 @@ def extract_from_url(url):
                     checks = ['script', 'style', 'meta', '<!--']
                     for chk in bs_obj.find_all(checks):
                         chk.extract()
-                    body = bs_obj.get_text()
+                    body = unicode(bs_obj.get_text())
                     pattern = re.compile('(^[\s]+)|([\s]+$)', re.MULTILINE)
                     body_str=re.sub(pattern," ",body)
                     drows = [title, url, body_str]
@@ -141,6 +146,7 @@ def extract_from_url(url):
                 title = u'Untitled'
             except None:
                 title = u'Untitled'
+        print "Processed",url,"..."
         return drows
     # can't connect to the host
     except:
@@ -153,38 +159,53 @@ def index_url(urls_to_process):
         drows = extract_from_url(url)
         if drows:
             u = Urls(url=unicode(url))
-            u.title = unicode(drows[0]).encode("ascii", 'ignore')
-            u.url = unicode(drows[1]).encode("ascii", 'ignore')
-            u.body = unicode(drows[2]).encode("ascii", 'ignore')
+            u.title = unicode(drows[0])#.encode("ascii", 'ignore')
+            u.url = unicode(drows[1])#.encode("ascii", 'ignore')
+            u.body = unicode(drows[2])#.encode("ascii", 'ignore')
             u.private = False
             db.session.add(u)
             db.session.commit()
     runDistSemWeighted.runScript(dm_dict)
 
-def runScript(num_pages):
-    readDM()
+def index_history(num_pages):
+  # [TODO] Set the firefox path here via config file
+  HISTORY_DB = get_firefox_history_db(home_directory)
+  if HISTORY_DB is None:
+    print 'Error - Cannot find the Firefox history database.\n\nExiting...'
+    sys.exit(1)
 
-    # [TODO] Set the firefox path here via config file
-    HISTORY_DB = get_firefox_history_db(home_directory)
-    if HISTORY_DB is None:
-        print 'Error - Cannot find the Firefox history database.\n\nExiting...'
-        sys.exit(1)
+  # connect to the sqlite history database
+  db = sqlite3.connect(HISTORY_DB)
+  cursor = db.cursor()
 
-    # connect to the sqlite history database
-    db = sqlite3.connect(HISTORY_DB)
-    cursor = db.cursor()
+  # get the list of all visited places via firefox browser
+  cursor.execute("SELECT * FROM 'moz_places' ORDER BY visit_count DESC")
+  rows = cursor.fetchall()
 
-    # get the list of all visited places via firefox browser
-    cursor.execute("SELECT * FROM 'moz_places' ORDER BY visit_count DESC")
-    rows = cursor.fetchall()
-
-    urls_to_process = record_urls_to_process(rows, num_pages)
-
-    index_url(urls_to_process)
-    db.close()
+  urls_to_process = record_urls_to_process(rows, int(num_pages))
+  db.close()
+  return urls_to_process
 
 
+def index_from_file(filename):
+  f = open(filename,'r')
+  urls_to_process = [ l for l in f ]
+  return urls_to_process
 
+
+def runScript(switch, arg):
+  '''Run script, either by indexing part of history or by indexing the urls
+  provided by the user'''
+  readDM()
+  urls_to_process = []
+
+  if switch == "history":
+    urls_to_process = index_history(arg)
+
+  if switch == "file":
+    urls_to_process = index_from_file(arg)
+
+  index_url(urls_to_process)
 
 if __name__ == '__main__':
-    runScript(sys.argv[1])
+    runScript(sys.argv[1], sys.argv[2])

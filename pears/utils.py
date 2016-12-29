@@ -80,16 +80,19 @@ def read_pears(pears):
     profile = Profile.query.first()
     my_ip = ipgetter.myip()
     pears_dict = {}
-    for ip in pears:
+    if not pears:
+      p = profile.vector
+      val = cStringIO.StringIO(str(p))
+      pears_dict[my_ip] = numpy.loadtxt(val)
+    else:
+      for ip in pears:
         if ip == my_ip:
-            p = profile.vector
+          p = profile.vector
         else:
-            p = requests.get("http://{}:5000/api/profile".format(ip)).text
-        val = cStringIO.StringIO(str(p))
-        pears_dict[ip] = numpy.loadtxt(val)
-
+          p = requests.get("http://{}:5000/api/profile".format(ip)).text
+          val =      cStringIO.StringIO(str(p))
+          pears_dict[ip] = numpy.loadtxt(val)
     return pears_dict
-
 
 def print_timing(func):
     """ Timing function, just to know how long things take """

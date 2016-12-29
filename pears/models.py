@@ -14,15 +14,17 @@ class Urls(db.Model):
     title = db.Column(db.UnicodeText())
     dists = db.Column(db.String(7000))
     wordclouds = db.Column(db.String(1000))
+    private = db.Column(db.Boolean, default = False)
 
 
     def __init__(self, url=None, dists=None, wordclouds=None,
-            title=None, body=None):
+            title=None, body=None, private=None):
         self.url = url
         self.dists = dists
         self.wordclouds = wordclouds
         self.body = body
         self.title = title
+        self.private = private
 
     def __repr__(self):
         return self.url

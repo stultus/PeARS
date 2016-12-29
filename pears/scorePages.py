@@ -9,6 +9,7 @@ import urllib
 import webbrowser
 from operator import itemgetter
 from pears import db
+import socket
 
 import numpy
 
