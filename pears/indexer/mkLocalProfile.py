@@ -7,57 +7,12 @@ import numpy as np
 from scipy.spatial import distance
 from pears.models import OpenVectors, Urls
 import runDistSemWeighted
-from pears.utils import normalise, cosine_similarity
+import mkWordClouds
+from pears.utils import normalise, cosine_similarity, sim_to_matrix
 from pears import db
 from pears.models import Profile
 
-stopwords = ["", "i", "a", "about", "an", "and", "each", "are", "as", "at", "be", "are", "were", "being", "by", "do",
-             "does", "did", "for", "from", "how", "in", "is", "it", "its", "make", "made", "of", "on", "or", "s",
-             "that", "the", "this", "to", "was", "what", "when", "where", "who", "will", "with", "has", "had", "have",
-             "he", "she", "one", "also", "his", "her", "their", "only", "both", "they", "however", "then", "later",
-             "but", "never", "which", "many"]
 num_dimensions = 400
-dm_dict = {}
-
-
-
-def readDM():
-    """ Read dm file (but only top 10,000 words) """
-    c = 0
-    # Make dictionary with key=row, value=vector
-    dmlines = [(each.word, each.vector) for each in
-            OpenVectors.query.all()]
-    for l in dmlines:
-        if c < 10000:
-            vects = [float(each) for each in l[1].split(',')]
-            dm_dict[l[0]] = normalise(vects)
-            c += 1
-        else:
-            break
-
-
-
-def sim_to_matrix(vec, n):
-    """ Compute similarities and return top n """
-    cosines = {}
-    for k, v in dm_dict.items():
-        cos = cosine_similarity(np.array(vec), np.array(v))
-        cosines[k] = cos
-
-    topics = []
-    topics_s = ""
-    c = 0
-    for t in sorted(cosines, key=cosines.get, reverse=True):
-        if c < n:
-            if t.isalpha() and t not in stopwords:
-                # print t,cosines[t]
-                topics.append(t)
-                topics_s += t + " "
-                c += 1
-        else:
-            break
-    return topics, topics_s[:-1]
-
 
 def coherence(vecs):
     coh = 0.0
@@ -114,8 +69,7 @@ def createProfileFile(profile, pear_dist, topics_s, coh):
 
 
 def runScript():
-    readDM()
-    runDistSemWeighted.runScript(dm_dict)
+    runDistSemWeighted.runScript()
     print "Computing pear for local history..."
     profile = Profile.query.first()
     if not profile:
@@ -124,6 +78,7 @@ def runScript():
     v, print_v, coh = computePearDist()
     topics, topics_s = sim_to_matrix(v, 20)
     createProfileFile(profile, print_v, topics_s, coh)
+    mkWordClouds.runScript()
 
 
 # PERHAPS PEAR NOT FOUND?

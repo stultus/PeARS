@@ -70,6 +70,7 @@ def record_urls_to_process(db_urls, num_pages):
     urls_to_process = []
     i = 0
     for url_str in db_urls:
+
         url = unicode(url_str[1])
         if i < num_pages:
             if not any( i in url for i in ignore_list):
