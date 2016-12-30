@@ -16,6 +16,11 @@ dm_dict = {}
 drows = []
 home_directory = os.path.expanduser('~')
 
+def local_to_www(url):
+  '''A hack to deal with locally indexed Wikipedia pages'''
+  if "http://localhost:8080/en.wikipedia.org/" in url:
+    url = url.replace("http://localhost:8080/","http://")
+  return url
 
 
 def mk_ignore():
@@ -124,7 +129,6 @@ def extract_from_url(url):
             print "Warning: "  + str(req.url) + ' has a status code of: ' \
                 + str(req.status_code) + ' omitted from database.\n'
 
-        print "Now parsing with BS..."
         bs_obj = BeautifulSoup(unicode(req.text),"lxml")
 
         if hasattr(bs_obj.title, 'string') \
@@ -140,7 +144,8 @@ def extract_from_url(url):
                     body = unicode(bs_obj.get_text())
                     pattern = re.compile('(^[\s]+)|([\s]+$)', re.MULTILINE)
                     body_str=re.sub(pattern," ",body)
-                    drows = [title, url, body_str]
+                    www_url = local_to_www(url)
+                    drows = [title, www_url, body_str]
 
                 if title is None:
                     title = u'Untitled'
@@ -148,7 +153,7 @@ def extract_from_url(url):
                 title = u'Untitled'
             except None:
                 title = u'Untitled'
-        print "Processed",url,"..."
+        #print "Processed",url,"..."
         return drows
     # can't connect to the host
     except:
@@ -194,7 +199,8 @@ def index_from_file(filename):
   urls_to_process = []
   for url in f:
     url = url.rstrip('\n')
-    if not db.session.query(Urls).filter_by(url=url).all():
+    www_url = local_to_www(url)
+    if not db.session.query(Urls).filter_by(url=www_url).all():
       urls_to_process.append(url)
       print "...writing",url,"..."
     else:

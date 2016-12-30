@@ -68,6 +68,7 @@ def runScript():
     buff = ""
     line_counter = 0
     for l in urls:
+      if l.body != "--processed--":
         url = l.url
         title = l.title
         buff = l.body
@@ -75,6 +76,7 @@ def runScript():
         s,wordcloud = mkVector(v, dm_dict)
         l.wordclouds = wordcloud
         l.dists = s
+        l.body = unicode("--processed--")
     db.session.commit()
 
 

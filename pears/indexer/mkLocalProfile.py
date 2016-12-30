@@ -59,7 +59,7 @@ def computePearDist():
     return vbase, dist_str, coh
 
 
-def createProfileFile(profile, pear_dist, topics_s, coh):
+def createProfile(profile, pear_dist, topics_s, coh):
     profile.topics = topics_s
     profile.coherence = str(coh)
     profile.vector = pear_dist
@@ -76,7 +76,7 @@ def runScript():
         profile = Profile(name=unicode(user))
     v, print_v, coh = computePearDist()
     topics, topics_s = sim_to_matrix(v, 20)
-    createProfileFile(profile, print_v, topics_s, coh)
+    createProfile(profile, print_v, topics_s, coh)
 
 
 # PERHAPS PEAR NOT FOUND?

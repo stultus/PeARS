@@ -70,8 +70,8 @@ def bestURLs(doc_scores):
     c = 0
     for w in sorted(doc_scores, key=doc_scores.get, reverse=True):
         if c < 50:
-            best_urls.append(w)
-            c += 1
+          best_urls.append(w)
+          c += 1
         else:
             break
     return best_urls
