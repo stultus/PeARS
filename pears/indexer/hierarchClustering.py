@@ -92,19 +92,18 @@ def processFile(threshold):
     for item in v:
       print item
     user_input = raw_input("Keep? (y/n) ")
-    if user_input == "y":
+    if user_input == "n":
       for item in v:
-        set_privacy_flag(item,True)
-
+        #set_privacy_flag(item,True)
+        delete_from_db(item)
 
 
 def runScript(threshold):
   readDM()    #Load the semantic space
   clusters=processFile(threshold)
-
-  remaining_urls = [(each.url,each.private) for each in Urls.query.all()]
-  for r in remaining_urls:
-    print r
+  #remaining_urls = [(each.url,each.private) for each in Urls.query.all()]
+  #for r in remaining_urls:
+  #  print r
 
 
   # when executing as script

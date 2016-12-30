@@ -26,10 +26,10 @@ if __name__=="__main__":
   if args["--history"]:
     retrieve_raw_data.runScript("history", args["--history"])
     if args["--cluster"]:
-      hierarchClustering.runScript(0.5)
+      hierarchClustering.runScript(0.8)
   if args["--file"]:
     retrieve_raw_data.runScript("file", args["--file"])
     if args["--cluster"]:
-      hierarchClustering.runScript(0.5)
+      hierarchClustering.runScript(0.8)
 
   mkLocalProfile.runScript()

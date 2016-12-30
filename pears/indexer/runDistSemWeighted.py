@@ -22,7 +22,6 @@ stopwords = ["", "(", ")", "a", "about", "an", "and", "are", "around", "as", "at
 
 entropies_dict=load_entropies()
 
-
 def weightFile(buff):
     word_dict = {}
     words = buff.split()
@@ -40,28 +39,27 @@ def weightFile(buff):
 
 
 def mkVector(word_dict, dm_dict):
-    """ Make vectors from weights """
-    # Initialise vbase and doc_dist vectors
-    vbase = np.zeros(num_dimensions)
-    # Add vectors together
-    if len(word_dict) > 0:
-        c = 0
-        for w in sorted(word_dict, key=word_dict.get, reverse=True):
-            if c < 5:
-                if w in dm_dict:
-                    vbase = vbase + float(word_dict[w]) * np.array(dm_dict[w])
-            c += 1
+  """ Make vectors from weights """
+  vbase = np.zeros(num_dimensions)
+  wordcloud = ""
+  # Add vectors together
+  if len(word_dict) > 0:
+    c = 0
+    for w in sorted(word_dict, key=word_dict.get, reverse=True):
+      if c < 20:
+        if w in dm_dict:
+          vbase = vbase + float(word_dict[w]) * np.array(dm_dict[w])
+          wordcloud+=w+" "
+          c += 1
 
-        vbase = normalise(vbase)
+    vbase = normalise(vbase)
 
-    # Make string version of document distribution
-    doc_dist_str = ""
-    for n in vbase:
-        doc_dist_str = doc_dist_str + "%.6f" % n + " "
+  # Make string version of document distribution
+  doc_dist_str = ""
+  for n in vbase:
+    doc_dist_str = doc_dist_str + "%.6f" % n + " "
 
-    # print "Computing nearest neighbours..."
-    # sim_to_matrix(array(vbase),20)
-    return doc_dist_str
+  return doc_dist_str, wordcloud[:-1]
 
 
 def runScript():
@@ -74,11 +72,12 @@ def runScript():
         title = l.title
         buff = l.body
         v = weightFile(buff)
-        s = mkVector(v, dm_dict)
+        s,wordcloud = mkVector(v, dm_dict)
+        l.wordclouds = wordcloud
         l.dists = s
     db.session.commit()
 
 
 # when executing as script
 if __name__ == '__main__':
-    runScript(sys.argv[1], sys.argv[2])
+    runScript() 

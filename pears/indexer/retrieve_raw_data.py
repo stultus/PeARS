@@ -84,11 +84,12 @@ def record_urls_to_process(db_urls, num_pages):
                             continue
                     else:
                         url_with_www = url
-                    if not db.session.query(Urls).filter(url==url,
-                            url==url_with_www).first():
-                        urls_to_process.append(url)
-                        print "...writing",url,"..."
-                        i+=1
+                    if not db.session.query(Urls).filter_by(url=url).all():
+                      urls_to_process.append(url)
+                      print "...writing",url,"..."
+                      i+=1
+                    else:
+                      print url,"is already known..."
         else:
           print "Recorded",len(urls_to_process),"urls..."
           break
@@ -160,13 +161,13 @@ def index_url(urls_to_process):
         drows = extract_from_url(url)
         if drows:
             u = Urls(url=unicode(url))
-            u.title = unicode(drows[0])#.encode("ascii", 'ignore')
-            u.url = unicode(drows[1])#.encode("ascii", 'ignore')
-            u.body = unicode(drows[2])#.encode("ascii", 'ignore')
+            u.title = unicode(drows[0])
+            u.url = unicode(drows[1])
+            u.body = unicode(drows[2])
             u.private = False
             db.session.add(u)
             db.session.commit()
-    runDistSemWeighted.runScript(dm_dict)
+    runDistSemWeighted.runScript()
 
 def index_history(num_pages):
   # [TODO] Set the firefox path here via config file
@@ -176,21 +177,28 @@ def index_history(num_pages):
     sys.exit(1)
 
   # connect to the sqlite history database
-  db = sqlite3.connect(HISTORY_DB)
-  cursor = db.cursor()
+  firefox_db = sqlite3.connect(HISTORY_DB)
+  cursor = firefox_db.cursor()
 
   # get the list of all visited places via firefox browser
   cursor.execute("SELECT * FROM 'moz_places' ORDER BY visit_count DESC")
   rows = cursor.fetchall()
 
   urls_to_process = record_urls_to_process(rows, int(num_pages))
-  db.close()
+  firefox_db.close()
   return urls_to_process
 
 
 def index_from_file(filename):
   f = open(filename,'r')
-  urls_to_process = [ l for l in f ]
+  urls_to_process = []
+  for url in f:
+    url = url.rstrip('\n')
+    if not db.session.query(Urls).filter_by(url=url).all():
+      urls_to_process.append(url)
+      print "...writing",url,"..."
+    else:
+      print url,"is already known..."
   return urls_to_process
 
 
@@ -209,4 +217,4 @@ def runScript(switch, arg):
   index_url(urls_to_process)
 
 if __name__ == '__main__':
-    runScript(sys.argv[1], sys.argv[2])
+  runScript(sys.argv[1], sys.argv[2])

@@ -7,7 +7,6 @@ import numpy as np
 from scipy.spatial import distance
 from pears.models import OpenVectors, Urls
 import runDistSemWeighted
-import mkWordClouds
 from pears.utils import normalise, cosine_similarity, sim_to_matrix
 from pears import db
 from pears.models import Profile
@@ -69,7 +68,7 @@ def createProfileFile(profile, pear_dist, topics_s, coh):
 
 
 def runScript():
-    runDistSemWeighted.runScript()
+    #runDistSemWeighted.runScript()
     print "Computing pear for local history..."
     profile = Profile.query.first()
     if not profile:
@@ -78,7 +77,6 @@ def runScript():
     v, print_v, coh = computePearDist()
     topics, topics_s = sim_to_matrix(v, 20)
     createProfileFile(profile, print_v, topics_s, coh)
-    mkWordClouds.runScript()
 
 
 # PERHAPS PEAR NOT FOUND?
