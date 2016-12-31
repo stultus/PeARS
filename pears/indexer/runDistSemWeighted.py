@@ -46,7 +46,7 @@ def mkVector(word_dict, dm_dict):
   if len(word_dict) > 0:
     c = 0
     for w in sorted(word_dict, key=word_dict.get, reverse=True):
-      if c < 20:
+      if c < 10:
         if w in dm_dict:
           vbase = vbase + float(word_dict[w]) * np.array(dm_dict[w])
           wordcloud+=w+" "

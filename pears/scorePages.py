@@ -10,7 +10,7 @@ import webbrowser
 from operator import itemgetter
 from pears import db
 import socket
-
+import math
 import numpy
 
 import getUrlOverlap
@@ -32,37 +32,39 @@ def scoreDS(query_dist, pear_urls):
         if vector.all():
             score = cosine_similarity(vector, query_dist)
             if score > 0.3:  # Doc must be good enough
-                DS_scores[url] = doc_dist
+                DS_scores[url] = score
         else:
             Urls.query.filter_by(url=url).delete()
             db.session.commit()
     return DS_scores, wordclouds
 
 
-def scoreURL(query, url_dict):
+def scoreURL(query, pear_urls):
     """ Get url overlap score """
     URL_scores = {}
-    for u in url_dict:
-        URL_scores[u] = getUrlOverlap.runScript(query, u)
+    for val in pear_urls:
+      url = val['url']
+      URL_scores[url] = getUrlOverlap.runScript(query, url)
     return URL_scores
 
 
-def scoreDocs(query, query_dist, url_dict):
+def scoreDocs(query, query_dist, pear_urls):
     """ Score documents for a pear """
     document_scores = {}  # Document scores
-    DS_scores = scoreDS(query_dist, url_dict)
-    URL_scores = scoreURL(query, url_dict)
-    for v in url_dict:
-        if v in DS_scores and v in URL_scores:
-            # If URL overlap high (0.2 because of averag e length of
-            # query=4 -- see getUrlOverlap --  and similarity okay
-            if URL_scores[v] > 0.7 and DS_scores[v] > 0.2:
-                document_scores[v] = DS_scores[v] + URL_scores[v] * 0.2  # Boost DS score by a maximum of 0.2
-            else:
-                document_scores[v] = DS_scores[v]
+    DS_scores, wordclouds = scoreDS(query_dist, pear_urls)
+    URL_scores = scoreURL(query, pear_urls)
+    for val in pear_urls:
+      v = val['url']
+      if v in DS_scores and v in URL_scores:
+        # If URL overlap high (0.2 because of averag e length of
+        # query=4 -- see getUrlOverlap --  and similarity okay
+        if URL_scores[v] > 0.7 and DS_scores[v] > 0.2:
+          document_scores[v] = DS_scores[v] + URL_scores[v] * 0.2  # Boost DS score by a maximum of 0.2
+        else:
+          document_scores[v] = DS_scores[v]
         if math.isnan(document_scores[v]):  # Check for potential NaN -- messes up with sorting in bestURLs.
-            document_scores[v] = 0
-    return document_scores
+          document_scores[v] = 0
+    return document_scores, wordclouds
 
 
 def bestURLs(doc_scores):
@@ -119,8 +121,8 @@ def runScript(query, query_dist, pears):
     best_urls = []
     for pear in pears:
         pear_urls = get_pear_urls(pear)
-        # document_scores=scoreDocs(query, query_dist, url_dict):	#with URL overlap
-        document_scores, wordclouds = scoreDS(query_dist, pear_urls)  # without URL overlap
+        document_scores, wordclouds = scoreDocs(query, query_dist, pear_urls)	#with URL overlap
+        #document_scores, wordclouds = scoreDS(query_dist, pear_urls)  # without URL overlap
         all_url_wordclouds.update(wordclouds)
         best_urls = bestURLs(document_scores)
     return output(best_urls, query, all_url_wordclouds)
