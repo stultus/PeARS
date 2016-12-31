@@ -22,7 +22,6 @@ def cache_file(url,html):
   path_dirs = url_parsed.path.rstrip('/')[1:].split('/')
   page = path_dirs[-1]
   cached_netloc = "./html_cache/"+url_parsed.netloc
-  print "PAGE:",page, "NETLOC:",cached_netloc
   if page == "":
     page = "index.html"
   cached_dir = cached_netloc+"/"+'/'.join(path_dirs[:-1])+"/"

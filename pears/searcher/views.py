@@ -12,8 +12,8 @@ from pears import scorePages
 from pears.utils import read_pears, query_distribution, load_entropies
 
 def get_result_from_dht(query_dist):
-    print "Checking dht..."	
-    return False
+    #print "Checking dht..."	
+    #return False
     try:
         urllib2.urlopen('http://localhost:8080', timeout=1)
     except urllib2.URLError as err:
