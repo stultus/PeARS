@@ -7,7 +7,7 @@ import requests
 import numpy as np
 from urllib2 import HTTPError
 from bs4 import BeautifulSoup
-import runDistSemWeighted
+import runDistSemWeighted, caching
 from pears.models import Urls,OpenVectors
 from pears import db
 
@@ -102,68 +102,65 @@ def record_urls_to_process(db_urls, num_pages):
     return urls_to_process
 
 
-def extract_from_url(url):
-    '''From history info, extract url, title and body of page,
-    cleaned with BeautifulSoup'''
-    drows = []
+def extract_from_url(url, cache):
+  '''From history info, extract url, title and body of page,
+  cleaned with BeautifulSoup'''
+  drows = []
+  try:
+    # TODO: Is there any issue in using redirects?
     try:
-        # TODO: Is there any issue in using redirects?
-        try:
-            req = requests.get(unicode(url), allow_redirects=True, timeout=20)
-        except (requests.exceptions.SSLError or
-                requests.exceptions.Timeout) as e:
-            print "\nCaught the exception: {0}. Trying with http...\n".format(
-                    str(e))
-            url = unicode(url.replace("https", "http"))
-            req = requests.get(url, allow_redirects=True)
-        except requests.exceptions.RequestException as e:
-            print "Ignoring {0} because of error {1}\n".format(url,
-                    str(e))
-            return
-        except requests.exceptions.HTTPError as err:
-            print str(err)
-            return
-        req.encoding = 'utf-8'
+      req = requests.get(unicode(url), allow_redirects=True, timeout=20)
+    except (requests.exceptions.SSLError or requests.exceptions.Timeout) as e:
+      print "\nCaught the exception: {0}. Trying with http...\n".format(str(e))
+      url = unicode(url.replace("https", "http"))
+      req = requests.get(url, allow_redirects=True)
+    except requests.exceptions.RequestException as e:
+      print "Ignoring {0} because of error {1}\n".format(url, str(e))
+      return
+    except requests.exceptions.HTTPError as err:
+      print str(err)
+      return
+    req.encoding = 'utf-8'
 
-        if req.status_code is not 200:
-            print "Warning: "  + str(req.url) + ' has a status code of: ' \
-                + str(req.status_code) + ' omitted from database.\n'
+    if req.status_code is not 200:
+      print "Warning: "  + str(req.url) + ' has a status code of: ' \
+        + str(req.status_code) + ' omitted from database.\n'
 
-        bs_obj = BeautifulSoup(unicode(req.text),"lxml")
+    if cache:
+      caching.runScript(url,unicode(req.text))
+    bs_obj = BeautifulSoup(unicode(req.text),"lxml")
 
-        if hasattr(bs_obj.title, 'string') \
-                & (req.status_code == requests.codes.ok):
-            try:
-                title = unicode(bs_obj.title.string)
-                if url.startswith('http'):
-                    if title is None:
-                        title = u'Untitled'
-                    checks = ['script', 'style', 'meta', '<!--']
-                    for chk in bs_obj.find_all(checks):
-                        chk.extract()
-                    body = unicode(bs_obj.get_text())
-                    pattern = re.compile('(^[\s]+)|([\s]+$)', re.MULTILINE)
-                    body_str=re.sub(pattern," ",body)
-                    www_url = local_to_www(url)
-                    drows = [title, www_url, body_str]
-
-                if title is None:
-                    title = u'Untitled'
-            except HTTPError as error:
-                title = u'Untitled'
-            except None:
-                title = u'Untitled'
+    if hasattr(bs_obj.title, 'string') & (req.status_code == requests.codes.ok):
+      try:
+        title = unicode(bs_obj.title.string)
+        if url.startswith('http'):
+          if title is None:
+            title = u'Untitled'
+          checks = ['script', 'style', 'meta', '<!--']
+          for chk in bs_obj.find_all(checks):
+            chk.extract()
+            body = unicode(bs_obj.get_text())
+            pattern = re.compile('(^[\s]+)|([\s]+$)', re.MULTILINE)
+            body_str=re.sub(pattern," ",body)
+            www_url = local_to_www(url)
+            drows = [title, www_url, body_str]
+        if title is None:
+          title = u'Untitled'
+      except HTTPError as error:
+        title = u'Untitled'
+      except None:
+        title = u'Untitled'
         #print "Processed",url,"..."
-        return drows
+    return drows
     # can't connect to the host
-    except:
-        error = sys.exc_info()[0]
-        print "Error - %s" % error
+  except:
+    error = sys.exc_info()[0]
+    print "Error - %s" % error
 
-def index_url(urls_to_process):
+def index_url(urls_to_process, cache):
     for url in urls_to_process:
         print "Indexing '{}'\n".format(url)
-        drows = extract_from_url(url)
+        drows = extract_from_url(url, cache)
         if drows:
             u = Urls(url=unicode(url))
             u.title = unicode(drows[0])
@@ -208,19 +205,25 @@ def index_from_file(filename):
   return urls_to_process
 
 
-def runScript(switch, arg):
+def runScript(*args):
   '''Run script, either by indexing part of history or by indexing the urls
   provided by the user'''
+
   readDM()
   urls_to_process = []
+  
+  switch = args[0]
+  arg = args[1]
+  cache = False
+  if len(args) == 3 and args[2] == "cache":
+    cache = True
 
   if switch == "history":
     urls_to_process = index_history(arg)
-
   if switch == "file":
     urls_to_process = index_from_file(arg)
 
-  index_url(urls_to_process)
+  index_url(urls_to_process, cache)
 
 if __name__ == '__main__':
-  runScript(sys.argv[1], sys.argv[2])
+  runScript(sys.argv)

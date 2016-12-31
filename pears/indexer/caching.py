@@ -1,6 +1,7 @@
 import sys
 import os
 import requests
+import codecs
 from bs4 import BeautifulSoup
 from urllib2 import urlopen
 from urllib import urlretrieve
@@ -9,25 +10,25 @@ from urlparse import urlparse, urljoin
 #TODO: issue when indexing top domain
 #check http links in same domain
 
+def write_to_cache(html, cached_page):
+  print "Writing to",cached_page,"..."
+  cache = codecs.open(cached_page,'w', encoding='utf8')
+  cache.write(unicode(html))
+  cache.close()
 
-url = sys.argv[1]
-
-def cache_file(url):
+def cache_file(url,html):
+  '''Write html in local cache directory'''
   url_parsed = urlparse(url)
-  print "URL_PARSED:",url_parsed
   path_dirs = url_parsed.path.rstrip('/')[1:].split('/')
-  print "PATH_DIRS:",path_dirs
   page = path_dirs[-1]
-  print "PAGE:",page
   cached_netloc = "./html_cache/"+url_parsed.netloc
   cached_dir = cached_netloc+"/"+'/'.join(path_dirs[:-1])+"/"
-  print "CACHED_DIR:",cached_dir
   if not os.path.isdir(cached_dir):
     os.makedirs(cached_dir)
   cached_page = cached_dir+page
-  print "CACHED_PAGE:",cached_page
   if not os.path.exists(cached_page):
-    urlretrieve(url, cached_page)
+    #urlretrieve(url, cached_page)
+    write_to_cache(html,cached_page)
 
 def get_images(url):
   """Downloads all the images at 'url' to cache"""
@@ -54,7 +55,9 @@ def get_css(url):
         print css_path
         cache_file(css_path)
 
-
-cache_file(url)
-get_images(url)
-get_css(url)
+def runScript(url,html):
+  print "Caching",url,"..."
+  cache_file(url,html)
+  #Optional: grab the images and css for that page
+  #get_images(url)
+  #get_css(url)
