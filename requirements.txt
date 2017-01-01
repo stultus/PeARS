@@ -16,3 +16,4 @@ lxml==3.6.4
 sqlalchemy-migrate==0.10.0
 ipgetter==0.6
 docopt==0.6.2
+langdetect==1.0.7
