@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 import runDistSemWeighted, caching
 from pears.models import Urls,OpenVectors
 from pears import db
+from langdetect import detect
 
 
 dm_dict = {}
@@ -139,11 +140,14 @@ def extract_from_url(url, cache):
           checks = ['script', 'style', 'meta', '<!--']
           for chk in bs_obj.find_all(checks):
             chk.extract()
-            body = unicode(bs_obj.get_text())
-            pattern = re.compile('(^[\s]+)|([\s]+$)', re.MULTILINE)
-            body_str=re.sub(pattern," ",body)
-            www_url = local_to_www(url)
-            drows = [title, www_url, body_str]
+          body = unicode(bs_obj.get_text())
+          pattern = re.compile('(^[\s]+)|([\s]+$)', re.MULTILINE)
+          body_str=re.sub(pattern," ",body)
+          if detect(body_str) != "en":
+            print "Ignoring",url,"because language is not supported."
+            return
+          www_url = local_to_www(url)
+          drows = [title, www_url, body_str]
         if title is None:
           title = u'Untitled'
       except HTTPError as error:
