@@ -7,12 +7,14 @@ from urllib2 import urlopen
 from urllib import urlretrieve
 from urlparse import urlparse, urljoin
 
-#TODO: issue when indexing top domain
 #check http links in same domain
+
+root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
 def write_to_cache(html, cached_page):
   print "Writing to",cached_page,"..."
   cache = codecs.open(cached_page,'w', encoding='utf8')
+  html = html.replace('</head>','<link rel="stylesheet" type="text/css" href="'+root_dir+'/static/css/offline.css"/>\n</head>')
   cache.write(unicode(html))
   cache.close()
 
