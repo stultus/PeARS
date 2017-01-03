@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 from flask import render_template, request, Blueprint
 import requests, json, urllib2, ipgetter
 from ast import literal_eval
@@ -10,6 +11,9 @@ from . import searcher
 from pears import best_pears
 from pears import scorePages
 from pears.utils import read_pears, query_distribution, load_entropies
+
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+root_dir = os.path.abspath(os.path.join(parent_dir, os.pardir))
 
 def get_result_from_dht(query_dist):
     #print "Checking dht..."	
@@ -26,6 +30,17 @@ def get_result_from_dht(query_dist):
     body = r.text.split('\n')[-1] if r else ''
     result = body.strip('\'\[\] \t\r').split(',')
     return result
+
+def get_cached_urls(urls):
+  urls_with_cache = urls
+  for u in urls_with_cache:
+    cache = u[0].replace("http://", root_dir+"/html_cache/")
+    cache = u[0].replace("https://", root_dir+"/html_cache/")
+    if os.path.exists(cache):
+      u.append("file://"+cache)
+    else:
+      u.append(u[0])
+  return urls_with_cache
 
 @searcher.route('/')
 @searcher.route('/index')
@@ -56,6 +71,7 @@ def index():
         # '''remove the following lines after testing'''
         # pages = [['http://test.com', 'test']]
 
+        pages = get_cached_urls(pages)
         return render_template('results.html', pears=pears,
                                query=query, results=pages)
       
