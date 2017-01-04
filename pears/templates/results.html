@@ -51,11 +51,11 @@
 
       </li>
       {% for p in pears %}
-
       <li>
         <center>
-          <img src={{p['name']}} class="hover" width="50px"/>
-          <p class="text"><b>{{p[1]}}</b></p>
+          <img src="{{ url_for('static', filename='pi-pic.png')}}"
+          class='hover' width="50px"/>
+          <p class="text"><b>{{p}}</b></p>
         </center>
         <hr/>
       </li>
@@ -72,8 +72,8 @@
       {% for result in results %}
       <div class="row">
         <div class="col-lg-12">
-          <h3><a href="{{result[0]}}">{{result[0]}}</a></h3>
-          {{result[1]}} ... <a href="{{result[2]}}">Cache</a>
+          <h3><a href="{{result[0]}}">{{result[1]}}</a></h3>
+          {{result[2]}} ... <a href="{{result[3]}}">Cache</a>
           <hr/>
         </div>
       </div>

@@ -23,12 +23,14 @@ def scoreDS(query_dist, pear_urls):
     """ Get distributional score """
     DS_scores = {}
     wordclouds = {}
+    titles = {}
     for val in pear_urls:
         url = val['url']
         doc_dist = val['dists']
         d = cStringIO.StringIO(str(doc_dist))
         vector = numpy.loadtxt(d)
         wordclouds[url] = val['wordclouds']
+        titles[url] = val['title']
         if vector.all():
             score = cosine_similarity(vector, query_dist)
             if score > 0.3:  # Doc must be good enough
@@ -36,7 +38,7 @@ def scoreDS(query_dist, pear_urls):
         else:
             Urls.query.filter_by(url=url).delete()
             db.session.commit()
-    return DS_scores, wordclouds
+    return DS_scores, wordclouds, titles
 
 
 def scoreURL(query, pear_urls):
@@ -51,7 +53,7 @@ def scoreURL(query, pear_urls):
 def scoreDocs(query, query_dist, pear_urls):
     """ Score documents for a pear """
     document_scores = {}  # Document scores
-    DS_scores, wordclouds = scoreDS(query_dist, pear_urls)
+    DS_scores, wordclouds, titles = scoreDS(query_dist, pear_urls)
     URL_scores = scoreURL(query, pear_urls)
     for val in pear_urls:
       v = val['url']
@@ -64,7 +66,7 @@ def scoreDocs(query, query_dist, pear_urls):
           document_scores[v] = DS_scores[v]
         if math.isnan(document_scores[v]):  # Check for potential NaN -- messes up with sorting in bestURLs.
           document_scores[v] = 0
-    return document_scores, wordclouds
+    return document_scores, wordclouds, titles
 
 
 def bestURLs(doc_scores):
@@ -89,12 +91,12 @@ def ddg_redirect(query):
             duckquery.rstrip('+'))
     return
 
-def output(best_urls, query, url_wordclouds):
+def output(best_urls, url_titles, url_wordclouds):
     results = []
     # If documents matching the query were found on the pear network...
     if len(best_urls) > 0:
         for u in best_urls:
-            results.append([u, url_wordclouds[u]])
+            results.append([u, url_titles[u], url_wordclouds[u]])
 
     # Otherwise, open duckduckgo and send the query there
     else:
@@ -104,12 +106,6 @@ def output(best_urls, query, url_wordclouds):
 
 def get_pear_urls(ip):
     my_ip = ipgetter.myip()
-    # my_ip =  ([l for l in ([ip for ip in
-        # socket.gethostbyname_ex(socket.gethostname())[2] if not
-        # ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 53)),
-            # s.getsockname()[0], s.close()) for s in
-            # [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]])
-        # if l][0][0])
     if ip == my_ip:
         urls = Urls.query.all()
         return [u.__dict__ for u in urls]
@@ -117,15 +113,17 @@ def get_pear_urls(ip):
         return requests.get("http://{}:5000/api/urls".format(ip)).text
 
 def runScript(query, query_dist, pears):
-    all_url_wordclouds = {}
+    url_wordclouds = {}
+    url_titles = {}
     best_urls = []
     for pear in pears:
         pear_urls = get_pear_urls(pear)
-        document_scores, wordclouds = scoreDocs(query, query_dist, pear_urls)	#with URL overlap
+        document_scores, wordclouds, titles = scoreDocs(query, query_dist, pear_urls)	#with URL overlap
         #document_scores, wordclouds = scoreDS(query_dist, pear_urls)  # without URL overlap
-        all_url_wordclouds.update(wordclouds)
+        url_wordclouds.update(wordclouds)
+        url_titles.update(titles)
         best_urls = bestURLs(document_scores)
-    return output(best_urls, query, all_url_wordclouds)
+    return output(best_urls, url_titles, url_wordclouds)
 
 
 if __name__ == '__main__':
