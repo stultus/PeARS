@@ -77,7 +77,7 @@ def cosine_similarity(peer_v, query_v):
     return num / (sqrt(den_a) * sqrt(den_b))
 
 
-def load_entropies(entropies_file='demo/ukwac.entropy.txt'):
+def load_entropies(entropies_file=os.path.join(root_dir, 'demo/ukwac.entropy.txt')):
     entropies_dict = {}
     with open(entropies_file, "r") as entropies:
         for line in entropies:
