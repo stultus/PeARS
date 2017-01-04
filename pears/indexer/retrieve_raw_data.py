@@ -7,7 +7,7 @@ import requests
 import numpy as np
 from urllib2 import HTTPError
 from bs4 import BeautifulSoup
-import runDistSemWeighted, caching
+import runDistSemWeighted, caching, detect_open
 from pears.models import Urls,OpenVectors
 from pears import db
 from langdetect import detect
@@ -133,7 +133,7 @@ def extract_from_url(url, cache):
 
     if hasattr(bs_obj.title, 'string') & (req.status_code == requests.codes.ok):
       try:
-        title = unicode(bs_obj.title.string)
+        title = unicode(bs_obj.title.string).replace(" - XOWA"," - Wikipedia")
         if url.startswith('http'):
           if title is None:
             title = u'Untitled'
@@ -147,7 +147,8 @@ def extract_from_url(url, cache):
             print "Ignoring",url,"because language is not supported."
             return
           www_url = local_to_www(url)
-          drows = [title, www_url, body_str]
+          wordcloud = detect_open.try_snippet(url,bs_obj)
+          drows = [title, www_url, body_str, wordcloud]
         if title is None:
           title = u'Untitled'
       except HTTPError as error:
@@ -170,6 +171,7 @@ def index_url(urls_to_process, cache):
             u.title = unicode(drows[0])
             u.url = unicode(drows[1])
             u.body = unicode(drows[2])
+            u.wordclouds = unicode(drows[3])
             u.private = False
             db.session.add(u)
             db.session.commit()
@@ -203,7 +205,7 @@ def index_from_file(filename):
     www_url = local_to_www(url)
     if not db.session.query(Urls).filter_by(url=www_url).all():
       urls_to_process.append(url)
-      print "...writing",url,"..."
+      print "...to process:",url,"..."
     else:
       print url,"is already known..."
   return urls_to_process

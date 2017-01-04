@@ -18,7 +18,7 @@ from .utils import query_distribution, cosine_similarity, print_timing
 from .models import Urls
 import cStringIO
 
-
+@print_timing
 def scoreDS(query_dist, pear_urls):
     """ Get distributional score """
     DS_scores = {}
@@ -50,6 +50,7 @@ def scoreURL(query, pear_urls):
     return URL_scores
 
 
+@print_timing
 def scoreDocs(query, query_dist, pear_urls):
     """ Score documents for a pear """
     document_scores = {}  # Document scores
@@ -103,7 +104,7 @@ def output(best_urls, url_titles, url_wordclouds):
         results = []
     return results
 
-
+@print_timing
 def get_pear_urls(ip):
     my_ip = ipgetter.myip()
     if ip == my_ip:
