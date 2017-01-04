@@ -3,7 +3,7 @@
 import os, sys
 import platform
 import subprocess
-from browser_history_indexer import index_browser_history
+from indexer import index_browser_history
 
 def setup():
     # Identify the type of operating system for install packages
@@ -37,5 +37,4 @@ def setup():
 
 if __name__=="__main__":
     setup()
-    # This calls the browser history analyser
-    index_browser_history()
+    print "Now please run the indexer. Run python ./indexer.py -h for help."
