@@ -74,7 +74,10 @@ def runScript():
         buff = l.body
         v = weightFile(buff)
         s,wordcloud = mkVector(v, dm_dict)
-        l.wordclouds = wordcloud
+        if l.wordclouds == "":
+          l.wordclouds = "WORDCLOUD: "+wordcloud
+        else:
+          l.wordclouds = "SNIPPET: "+l.wordclouds
         l.dists = s
         l.body = unicode("--processed--")
     db.session.commit()
