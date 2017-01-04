@@ -1,91 +1,17 @@
 """ Make user profiles by adding document vectors """
 
 import os
-import sys
+import sys, getpass
 
 import numpy as np
 from scipy.spatial import distance
+from pears.models import OpenVectors, Urls
+import runDistSemWeighted
+from pears.utils import normalise, cosine_similarity, sim_to_matrix
+from pears import db
+from pears.models import Profile
 
-path_to_PeARS = os.path.join(os.path.dirname(__file__), "local-history")
-stopwords = ["", "i", "a", "about", "an", "and", "each", "are", "as", "at", "be", "are", "were", "being", "by", "do",
-             "does", "did", "for", "from", "how", "in", "is", "it", "its", "make", "made", "of", "on", "or", "s",
-             "that", "the", "this", "to", "was", "what", "when", "where", "who", "will", "with", "has", "had", "have",
-             "he", "she", "one", "also", "his", "her", "their", "only", "both", "they", "however", "then", "later",
-             "but", "never", "which", "many"]
 num_dimensions = 400
-dm_dict = {}
-
-
-def readUsers(usernames_file):
-    """ Read list of users """
-    # print "Getting users..."
-    users = []
-    f = open(usernames_file, 'r')
-    for l in f:
-        l = l.rstrip('\n')
-        users.append(l)
-    f.close()
-    return users
-
-
-def normalise(v):
-    norm = np.linalg.norm(v)
-    if norm == 0:
-        return v
-    return v / norm
-
-
-def readDM():
-    """ Read dm file (but only top 10,000 words) """
-    c = 0
-    # Make dictionary with key=row, value=vector
-    dmlines = open("openvectors.dm", 'r')
-    for l in dmlines:
-        if c < 10000:
-            items = l.rstrip('\n').split('\t')
-            row = items[0]
-            vec = [float(i) for i in items[1:]]
-            dm_dict[row] = normalise(vec)
-            c += 1
-        else:
-            break
-    dmlines.close()
-
-
-def cosine_similarity(peer_v, query_v):
-    if np.linalg.norm(peer_v) != 0 and np.linalg.norm(query_v) != 0:
-        if len(peer_v) != len(query_v):
-            raise ValueError("Peer vector and query vector must be "
-                             " of same length")
-        num = np.dot(peer_v, query_v)
-        den_a = np.dot(peer_v, peer_v)
-        den_b = np.dot(query_v, query_v)
-        return num / (np.sqrt(den_a) * np.sqrt(den_b))
-    else:
-        return 0
-
-
-def sim_to_matrix(vec, n):
-    """ Compute similarities and return top n """
-    cosines = {}
-    for k, v in dm_dict.items():
-        cos = cosine_similarity(np.array(vec), np.array(v))
-        cosines[k] = cos
-
-    topics = []
-    topics_s = ""
-    c = 0
-    for t in sorted(cosines, key=cosines.get, reverse=True):
-        if c < n:
-            if t.isalpha() and t not in stopwords:
-                # print t,cosines[t]
-                topics.append(t)
-                topics_s += t + " "
-                c += 1
-        else:
-            break
-    return topics, topics_s[:-1]
-
 
 def coherence(vecs):
     coh = 0.0
@@ -108,20 +34,17 @@ def coherence(vecs):
     return coh
 
 
-def computePearDist(pear):
+def computePearDist():
     vbase = np.zeros(num_dimensions)
     vecs_for_coh = []  # Store vectors for this user in order to compute coherence
     # Open document distributions file
-    doc_dists = open(path_to_PeARS + "/urls.dists.txt", "r")
-    for l in doc_dists:
-        l = l.rstrip('\n')
-        doc_dist = l.split()[1:]
+    urls = Urls.query.all()
+    for l in urls:
+        doc_dist = filter(None, l.dists.split(' '))
         vdocdist = np.array([float(i) for i in doc_dist])
         vbase = vbase + vdocdist
-        # print vdocdist[:10]
         if np.linalg.norm(vdocdist) > 0.0:
             vecs_for_coh.append(vdocdist)
-    doc_dists.close()
 
     vbase = normalise(vbase)
     # Make string version of distribution
@@ -136,23 +59,24 @@ def computePearDist(pear):
     return vbase, dist_str, coh
 
 
-def createProfileFile(pear, pear_dist, topics_s, coh):
-    profile = open(path_to_PeARS + "/profile.txt", 'w')
-    profile.write("name = " + pear + "\n")
-    profile.write("topics = " + topics_s + "\n")
-    profile.write("coherence = " + str(coh) + "\n")
-    profile.write("pear_id:" + pear_dist + "\n")
-    profile.close()
+def createProfile(profile, pear_dist, topics_s, coh):
+    profile.topics = topics_s
+    profile.coherence = str(coh)
+    profile.vector = pear_dist
+    db.session.add(profile)
+    db.session.commit()
 
 
 def runScript():
-    readDM()
+    #runDistSemWeighted.runScript()
     print "Computing pear for local history..."
-    # try:
-    user="localhistory"
-    v, print_v, coh = computePearDist(user)
+    profile = Profile.query.first()
+    if not profile:
+        user = getpass.getuser()
+        profile = Profile(name=unicode(user))
+    v, print_v, coh = computePearDist()
     topics, topics_s = sim_to_matrix(v, 20)
-    createProfileFile(user, print_v, topics_s, coh)
+    createProfile(profile, print_v, topics_s, coh)
 
 
 # PERHAPS PEAR NOT FOUND?

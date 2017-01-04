@@ -8,8 +8,10 @@ import re
 import sys
 
 import numpy as np
-from utils import load_entropies, normalise, cosine_similarity,\
-doc_distribution, print_array
+from pears.utils import load_entropies, normalise, cosine_similarity, readDM
+from pears.models import Urls
+from pears import app, db
+from ast import literal_eval
 
 num_dimensions = 400
 stopwords = ["", "(", ")", "a", "about", "an", "and", "are", "around", "as", "at", "away", "be", "become", "became",
@@ -18,10 +20,7 @@ stopwords = ["", "(", ")", "a", "about", "an", "and", "are", "around", "as", "at
              "on", "or", "s", "she", "some", "that", "the", "their", "there", "this", "these", "those", "to", "under",
              "was", "were", "what", "when", "where", "which", "who", "will", "with", "you", "your"]
 
-dm_dict = {}  # Dictionary to store dm file
-doc_dists = []  # Which files already have a distribution
 entropies_dict=load_entropies()
-
 
 def weightFile(buff):
     word_dict = {}
@@ -39,66 +38,48 @@ def weightFile(buff):
     return word_dict
 
 
-def mkVector(word_dict):
-    """ Make vectors from weights """
-    # Initialise vbase and doc_dist vectors
-    vbase = np.zeros(num_dimensions)
-    # Add vectors together
-    if len(word_dict) > 0:
-        c = 0
-        for w in sorted(word_dict, key=word_dict.get, reverse=True):
-            if c < 5:
-                # print w,word_dict[w]
-                if w in dm_dict:
-                    vbase = vbase + float(word_dict[w]) * np.array(dm_dict[w])
-            c += 1
+def mkVector(word_dict, dm_dict):
+  """ Make vectors from weights """
+  vbase = np.zeros(num_dimensions)
+  wordcloud = ""
+  # Add vectors together
+  if len(word_dict) > 0:
+    c = 0
+    for w in sorted(word_dict, key=word_dict.get, reverse=True):
+      if c < 10:
+        if w in dm_dict:
+          vbase = vbase + float(word_dict[w]) * np.array(dm_dict[w])
+          wordcloud+=w+" "
+          c += 1
 
-        vbase = normalise(vbase)
+    vbase = normalise(vbase)
 
-    # Make string version of document distribution
-    doc_dist_str = ""
-    for n in vbase:
-        doc_dist_str = doc_dist_str + "%.6f" % n + " "
+  # Make string version of document distribution
+  doc_dist_str = ""
+  for n in vbase:
+    doc_dist_str = doc_dist_str + "%.6f" % n + " "
 
-    # print "Computing nearest neighbours..."
-    # sim_to_matrix(array(vbase),20)
-    return doc_dist_str
+  return doc_dist_str, wordcloud[:-1]
 
 
-def runScript(infile, out):
-    docdists = open(out, "w")
-
-    f = open(infile, 'r')
+def runScript():
+    urls = Urls.query.all()
+    dm_dict = readDM()
     buff = ""
     line_counter = 0
-    for l in f:
-        l = l.rstrip('\n')
-        if "<doc" in l:
-            doc_id = ""
-            m = re.search("<doc url=\"(.*)\".*title=\"(.*)\"", l)
-            url = m.group(1)
-            title = m.group(2)
-            print url
-        else:
-            if "</doc" not in l:
-                # Ignore lines after number 20 and those with one word only
-                if line_counter < 20: #and len(l.split()) > 1:
-                    buff += l + " "
-                    line_counter += 1
-                else:
-                    continue
-            else:
-                v = weightFile(buff)
-                # s = mkVector(v)
-                print buff
-                s = doc_distribution(unicode(buff), entropies_dict, v)
-                docdists.write(url + " " + print_array(s) + "\n")
-                buff = ""
-                line_counter = 0
-    f.close()
-    docdists.close()
+    for l in urls:
+      if l.body != "--processed--":
+        url = l.url
+        title = l.title
+        buff = l.body
+        v = weightFile(buff)
+        s,wordcloud = mkVector(v, dm_dict)
+        l.wordclouds = wordcloud
+        l.dists = s
+        l.body = unicode("--processed--")
+    db.session.commit()
 
 
 # when executing as script
 if __name__ == '__main__':
-    runScript(sys.argv[1], sys.argv[2])
+    runScript() 
