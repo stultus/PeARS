@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 from flask import render_template, request, Blueprint
 import requests, json, urllib2, ipgetter
 from ast import literal_eval
@@ -34,8 +35,7 @@ def get_result_from_dht(query_dist):
 def get_cached_urls(urls):
   urls_with_cache = urls
   for u in urls_with_cache:
-    cache = u[0].replace("http://", root_dir+"/html_cache/")
-    cache = u[0].replace("https://", root_dir+"/html_cache/")
+    cache = re.sub(r"http\:\/\/|https\:\/\/", root_dir+"/html_cache/", u[0])
     if os.path.exists(cache):
       u.append("file://"+cache)
     else:
@@ -45,7 +45,7 @@ def get_cached_urls(urls):
 @searcher.route('/')
 @searcher.route('/index')
 def index():
-    pages = []
+    results = []
     entropies_dict = load_entropies()
     query = request.args.get('q')
     if not query:
@@ -53,25 +53,22 @@ def index():
     else:
         query_dist = query_distribution(query, entropies_dict)
         pear_details = []
-        pages = []
+        results = []
         if query_dist.size:
             pears = get_result_from_dht(query_dist)
             pear_profiles = read_pears(pears)
             pear_details = best_pears.find_best_pears(query_dist, pear_profiles)
             pear_ips = pear_details.keys()
-            print pear_ips
-            pages = scorePages.runScript(query, query_dist, pear_ips)
-        if not pear_details or not pages:
-            pears = [['nopear',
-                      'Sorry... no pears found :(',
-                      './static/pi-pic.png']]
-            scorePages.ddg_redirect(query)
+            results = scorePages.runScript(query, query_dist, pear_ips)
+        if not pear_details or not results:
+          pears = ['no pear found :(']
+          scorePages.ddg_redirect(query)
         elif not pears:
             pears = [ipgetter.myip()]
         # '''remove the following lines after testing'''
         # pages = [['http://test.com', 'test']]
 
-        pages = get_cached_urls(pages)
+        results = get_cached_urls(results)
         return render_template('results.html', pears=pears,
-                               query=query, results=pages)
+                               query=query, results=results)
       
