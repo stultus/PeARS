@@ -8,7 +8,7 @@ from cStringIO import StringIO
 from StringIO import StringIO
 import urllib2
 from urllib2 import Request
-import requests
+import caching
 import sys
 
 #Thanks to https://quantcorner.wordpress.com/2014/03/16/parsing-pdf-files-with-python-and-pdfminer/
@@ -62,5 +62,8 @@ def extract_from_url(url, cache):
     title = unicode(title, "utf-8")
     body_str = unicode(body_str, "utf-8")
     drows = [title, url, body_str, ""]
+    if cache:
+      caching.cache_pdf(url)
+
   return drows
 
