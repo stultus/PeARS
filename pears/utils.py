@@ -17,6 +17,8 @@ stopwords = ["", "(", ")", "a", "about", "an", "and", "are", "around", "as", "at
 
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
+def convert_to_array(vector):
+  return np.array([float(i) for i in vector.split(',')])
 
 def readDM():
     """ Read dm file (but only top 10,000 words) """
@@ -93,18 +95,16 @@ def load_entropies(entropies_file=os.path.join(root_dir, 'demo/ukwac.entropy.txt
 def query_distribution(query, entropies):
     """ Make distribution for query """
     words = query.rstrip('\n').split()
-
     # Only retain arguments which are in the distributional semantic space
     vecs_to_add = []
     for word in words:
         word_db = OpenVectors.query.filter(OpenVectors.word == word).first()
         if word_db:
-            vecs_to_add.append(word_db)
+          vecs_to_add.append(word_db)
         else:
-            word = word[0].upper() + word[1:]  # Did user carelessly forget to capitalise a proper noun?
-            word_db = OpenVectors.query.filter(OpenVectors.word == word).first()
-            if word_db:
-                vecs_to_add.append(word_db)
+          unknown = get_unknown_word(word)
+          if unknown:
+            vecs_to_add.append(unknown)
 
     vbase = array([])
     # Add vectors together
@@ -150,3 +150,16 @@ def print_timing(func):
         return res
 
     return wrapper
+
+def get_unknown_word(word):
+  print "Fetching",word
+  r = requests.get("http://139.162.36.195/vectors/"+word+"/")
+  print r.status_code
+  if r.status_code == 200:
+    openvectors = OpenVectors()
+    openvectors.word = unicode(word)
+    openvectors.vector = r.json()['vector']
+    db.session.add(openvectors)
+    db.session.commit()
+    return openvectors
+  return False

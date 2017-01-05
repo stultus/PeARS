@@ -8,7 +8,7 @@ import re
 import sys
 
 import numpy as np
-from pears.utils import load_entropies, normalise, cosine_similarity, readDM
+from pears.utils import load_entropies, normalise, cosine_similarity, readDM, get_unknown_word
 from pears.models import Urls
 from pears import app, db
 from ast import literal_eval
@@ -47,6 +47,12 @@ def mkVector(word_dict, dm_dict):
     c = 0
     for w in sorted(word_dict, key=word_dict.get, reverse=True):
       if c < 10:
+        w_vector = ""
+        if w not in dm_dict:
+          unknown = get_unknown_word(w)
+          if unknown:
+            w_vector = [float(i) for i in unknown.vector.split(',')]
+            dm_dict[w] = normalise(w_vector)
         if w in dm_dict:
           vbase = vbase + float(word_dict[w]) * np.array(dm_dict[w])
           wordcloud+=w+" "
