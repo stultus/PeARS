@@ -2,7 +2,7 @@
 Called by ./mkQueryPage.py
 """
 
-import os, requests, ipgetter
+import os, requests, urllib
 import re
 import sys
 import urllib
@@ -106,7 +106,7 @@ def output(best_urls, url_titles, url_wordclouds):
 
 @print_timing
 def get_pear_urls(ip):
-    my_ip = ipgetter.myip()
+    my_ip = urllib.urlopen('http://ip.42.pl/short').read().strip('\n')
     if ip == my_ip:
         urls = Urls.query.all()
         return [u.__dict__ for u in urls]

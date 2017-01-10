@@ -4,7 +4,7 @@
 import os
 import re
 from flask import render_template, request, Blueprint
-import requests, json, urllib2, ipgetter
+import requests, json, urllib2, urllib
 from ast import literal_eval
 
 from . import searcher
@@ -17,12 +17,8 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 root_dir = os.path.abspath(os.path.join(parent_dir, os.pardir))
 
 def get_result_from_dht(query_dist):
-    #print "Checking dht..."	
+    #print "Checking dht..."
     #return False
-    try:
-        urllib2.urlopen('http://localhost:8080', timeout=1)
-    except urllib2.URLError as err:
-        return False
     url = 'http://localhost:8080'
     headers = {'content-type': 'application/json', 'Accept-Charset':
             'UTF-8', 'Connection': 'close'}
@@ -64,11 +60,12 @@ def index():
           pears = ['no pear found :(']
           scorePages.ddg_redirect(query)
         elif not pears:
-            pears = [ipgetter.myip()]
+            pears = [urllib.urlopen(
+                'http://ip.42.pl/short').read().strip('\n')]
         # '''remove the following lines after testing'''
         # pages = [['http://test.com', 'test']]
 
         results = get_cached_urls(results)
         return render_template('results.html', pears=pears,
                                query=query, results=results)
-      
+
