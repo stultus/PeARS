@@ -1,5 +1,5 @@
 import os, cStringIO
-import time, requests, ipgetter, numpy
+import time, requests, urllib, numpy
 from sqlalchemy.types import PickleType
 import getpass
 import socket
@@ -124,20 +124,20 @@ def query_distribution(query, entropies):
 
 def read_pears(pears):
     profile = Profile.query.first()
-    my_ip = ipgetter.myip()
+    my_ip = urllib.urlopen('http://ip.42.pl/short').read().strip('\n')
     pears_dict = {}
     if not pears:
-      p = profile.vector
-      val = cStringIO.StringIO(str(p))
-      pears_dict[my_ip] = numpy.loadtxt(val)
+        p = profile.vector
+        val = cStringIO.StringIO(str(p))
+        pears_dict[my_ip] = numpy.loadtxt(val)
     else:
-      for ip in pears:
-        if ip == my_ip:
-          p = profile.vector
-        else:
-          p = requests.get("http://{}:5000/api/profile".format(ip)).text
-          val =      cStringIO.StringIO(str(p))
-          pears_dict[ip] = numpy.loadtxt(val)
+        for ip in pears:
+            if ip == my_ip:
+                p = profile.vector
+            else:
+                p = requests.get("http://{}:5000/api/profile".format(ip)).text
+            val = cStringIO.StringIO(str(p))
+            pears_dict[ip] = numpy.loadtxt(val)
     return pears_dict
 
 def print_timing(func):
