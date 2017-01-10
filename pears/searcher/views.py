@@ -23,9 +23,12 @@ def get_result_from_dht(query_dist):
     headers = {'content-type': 'application/json', 'Accept-Charset':
             'UTF-8', 'Connection': 'close'}
     query_str  = ' '.join([each.strip('\n\[\]') for each in str(query_dist).split(' ')])
-    r = requests.post(url, data=json.dumps(query_str), headers=headers)
-    body = r.text.split('\n')[-1] if r else ''
-    result = body.strip('\'\[\] \t\r').split(',')
+    try:
+        r = requests.post(url, data=json.dumps(query_str), headers=headers)
+        body = r.text.split('\n')[-1] if r else ''
+        result = body.strip('\'\[\] \t\r').split(',')
+    except:
+        result = []
     return result
 
 def get_cached_urls(urls):
