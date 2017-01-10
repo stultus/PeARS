@@ -17,34 +17,18 @@ stopwords = ["", "(", ")", "a", "about", "an", "and", "are", "around", "as", "at
 
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
-
-def readDM():
-    """ Read dm file (but only top 10,000 words) """
-    c = 0
-    dm_dict = {}
-    # Make dictionary with key=row, value=vector
-    profile = Profile.query.first()
-    if not profile:
-        user = getpass.getuser()
-        profile = Profile(name=unicode(user))
-    dmlines = [(each.word, each.vector) for each in
-            OpenVectors.query.all()]
-    for l in dmlines:
-        if c < 10000:
-            vects = [float(each) for each in l[1].split(',')]
-            dm_dict[l[0]] = normalise(vects)
-            c += 1
-        else:
-            break
-    return dm_dict
+def convert_to_array(vector):
+  return array([float(i) for i in vector.split(',')])
 
 def sim_to_matrix(vec, n):
     """ Compute similarities and return top n """
-    dm_dict = readDM()
     cosines = {}
-    for k, v in dm_dict.items():
-        cos = cosine_similarity(numpy.array(vec), numpy.array(v))
-        cosines[k] = cos
+    c = 0
+    '''Only look at first 10000 words, for efficiency purposes'''
+    for entry in OpenVectors.query.all():
+      if c < 10000:
+        cos = cosine_similarity(numpy.array(vec), convert_to_array(entry.vector))
+        cosines[entry.word] = cos
 
     topics = []
     topics_s = ""
@@ -52,12 +36,12 @@ def sim_to_matrix(vec, n):
     for t in sorted(cosines, key=cosines.get, reverse=True):
         if c < n:
             if t.isalpha() and t not in stopwords:
-                # print t,cosines[t]
                 topics.append(t)
                 topics_s += t + " "
                 c += 1
         else:
             break
+    print "Nearest neighbours for profile:",topics_s
     return topics, topics_s[:-1]
 
 def normalise(v):
@@ -93,18 +77,16 @@ def load_entropies(entropies_file=os.path.join(root_dir, 'demo/ukwac.entropy.txt
 def query_distribution(query, entropies):
     """ Make distribution for query """
     words = query.rstrip('\n').split()
-
     # Only retain arguments which are in the distributional semantic space
     vecs_to_add = []
     for word in words:
         word_db = OpenVectors.query.filter(OpenVectors.word == word).first()
         if word_db:
-            vecs_to_add.append(word_db)
+          vecs_to_add.append(word_db)
         else:
-            word = word[0].upper() + word[1:]  # Did user carelessly forget to capitalise a proper noun?
-            word_db = OpenVectors.query.filter(OpenVectors.word == word).first()
-            if word_db:
-                vecs_to_add.append(word_db)
+          unknown = get_unknown_word(word)
+          if unknown:
+            vecs_to_add.append(unknown)
 
     vbase = array([])
     # Add vectors together
@@ -150,3 +132,20 @@ def print_timing(func):
         return res
 
     return wrapper
+
+def get_unknown_word(word):
+  print "Fetching",word
+  try:
+    r = requests.get("http://api.openmeaning.org/vectors/"+word+"/")
+    print r.status_code
+    if r.status_code == 200:
+      openvectors = OpenVectors()
+      openvectors.word = unicode(word)
+      openvectors.vector = r.json()['vector']
+      db.session.add(openvectors)
+      db.session.commit()
+      return openvectors
+    return False
+  except:
+    print "Problem fetching word..."
+    return

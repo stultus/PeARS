@@ -5,7 +5,7 @@ import sys, getpass
 
 import numpy as np
 from scipy.spatial import distance
-from pears.models import OpenVectors, Urls
+from pears.models import Urls
 import runDistSemWeighted
 from pears.utils import normalise, cosine_similarity, sim_to_matrix
 from pears import db

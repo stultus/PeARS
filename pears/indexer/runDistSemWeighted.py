@@ -8,8 +8,8 @@ import re
 import sys
 
 import numpy as np
-from pears.utils import load_entropies, normalise, cosine_similarity, readDM
-from pears.models import Urls
+from pears.utils import load_entropies, normalise, cosine_similarity, get_unknown_word, convert_to_array
+from pears.models import Urls, OpenVectors
 from pears import app, db
 from ast import literal_eval
 
@@ -38,7 +38,7 @@ def weightFile(buff):
     return word_dict
 
 
-def mkVector(word_dict, dm_dict):
+def mkVector(word_dict):
   """ Make vectors from weights """
   vbase = np.zeros(num_dimensions)
   wordcloud = ""
@@ -47,8 +47,11 @@ def mkVector(word_dict, dm_dict):
     c = 0
     for w in sorted(word_dict, key=word_dict.get, reverse=True):
       if c < 10:
-        if w in dm_dict:
-          vbase = vbase + float(word_dict[w]) * np.array(dm_dict[w])
+        if not db.session.query(OpenVectors).filter_by(word=w).first():
+          unknown = get_unknown_word(w)
+        w_vector = db.session.query(OpenVectors).filter_by(word=w).first().vector
+        if w_vector:
+          vbase = vbase + float(word_dict[w]) * convert_to_array(w_vector)
           wordcloud+=w+" "
           c += 1
 
@@ -64,7 +67,6 @@ def mkVector(word_dict, dm_dict):
 
 def runScript():
     urls = Urls.query.all()
-    dm_dict = readDM()
     buff = ""
     line_counter = 0
     for l in urls:
@@ -73,7 +75,7 @@ def runScript():
         title = l.title
         buff = l.body
         v = weightFile(buff)
-        s,wordcloud = mkVector(v, dm_dict)
+        s,wordcloud = mkVector(v)
         if l.wordclouds == "":
           l.wordclouds = "WORDCLOUD: "+wordcloud
         else:

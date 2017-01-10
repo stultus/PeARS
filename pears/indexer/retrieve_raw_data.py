@@ -13,7 +13,6 @@ from pears import db
 from langdetect import detect
 
 
-dm_dict = {}
 drows = []
 home_directory = os.path.expanduser('~')
 
@@ -49,25 +48,6 @@ def get_firefox_history_db(in_dir):
       # print history_db
       return history_db
   return None
-
-def normalise(v):
-    norm = np.linalg.norm(v)
-    if norm == 0:
-        return v
-    return v / norm
-
-def readDM():
-    """ Read dm file """
-    print "Reading vectors..."
-    dmlines = [(each.word, each.vector) for each in
-            OpenVectors.query.all()]
-    c = 0
-    for l in dmlines:
-      #if c < 10000:
-      vects = [float(each) for each in l[1].split(',')]
-      dm_dict[l[0]] = normalise(vects)
-      c+=1
-    print "Finished! Read",c,"vectors..."
 
 def record_urls_to_process(db_urls, num_pages):
     '''Select and write urls that will be clustered.'''
@@ -215,7 +195,6 @@ def runScript(*args):
   '''Run script, either by indexing part of history or by indexing the urls
   provided by the user'''
 
-  readDM()
   urls_to_process = []
   
   switch = args[0]
