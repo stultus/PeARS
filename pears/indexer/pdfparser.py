@@ -8,21 +8,20 @@ from cStringIO import StringIO
 from StringIO import StringIO
 import urllib2
 from urllib2 import Request
-import requests
+import caching
 import sys
 
 #Thanks to https://quantcorner.wordpress.com/2014/03/16/parsing-pdf-files-with-python-and-pdfminer/
 
 def convert_pdf_to_txt(url):
-  open = urllib2.urlopen(Request(url)).read()
+  try:
+    open = urllib2.urlopen(Request(url)).read()
+  except:
+    print "Error accessing the file"
+    return ""
 
-  # Cast to StringIO object
   memory_file = StringIO(open)
-
-  # Create a PDF parser object associated with the StringIO object
   parser = PDFParser(memory_file)
-
-  # Create a PDF document object that stores the document structure
   document = PDFDocument(parser)
 
   rsrcmgr = PDFResourceManager()
@@ -43,4 +42,28 @@ def convert_pdf_to_txt(url):
   retstr.close()
   return text
 
-print convert_pdf_to_txt(sys.argv[1])
+def extract_from_url(url, cache):
+  drows = []
+  body = convert_pdf_to_txt(url)
+  if body != "":
+    lines = body.split('\n')
+    body_str = ""
+    c = 0
+    title = ""
+    for l in lines:
+      '''Don't consider more than 200 lines (for long pdfs!)'''
+      if c < 200:
+        if title == "":
+          title = l
+        if l != "":
+          body_str+=l+" "
+      c+=1
+
+    title = unicode(title, "utf-8")
+    body_str = unicode(body_str, "utf-8")
+    drows = [title, url, body_str, ""]
+    if cache:
+      caching.cache_pdf(url)
+
+  return drows
+

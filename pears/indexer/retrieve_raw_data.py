@@ -3,24 +3,13 @@ import re
 import sys
 import csv
 import sqlite3
-import requests
 import numpy as np
-from urllib2 import HTTPError
-from bs4 import BeautifulSoup
-import runDistSemWeighted, caching, detect_open
+import htmlparser, pdfparser, xowa, runDistSemWeighted
 from pears.models import Urls,OpenVectors
 from pears import db
-from langdetect import detect
-
 
 drows = []
 home_directory = os.path.expanduser('~')
-
-def local_to_www(url):
-  '''A hack to deal with locally indexed Wikipedia pages'''
-  if "http://localhost:8080/en.wikipedia.org/" in url:
-    url = url.replace("http://localhost:8080/","http://")
-  return url
 
 
 def mk_ignore():
@@ -83,79 +72,7 @@ def record_urls_to_process(db_urls, num_pages):
     return urls_to_process
 
 
-def extract_from_url(url, cache):
-  '''From history info, extract url, title and body of page,
-  cleaned with BeautifulSoup'''
-  drows = []
-  try:
-    # TODO: Is there any issue in using redirects?
-    try:
-      req = requests.get(unicode(url), allow_redirects=True, timeout=20)
-    except (requests.exceptions.SSLError or requests.exceptions.Timeout) as e:
-      print "\nCaught the exception: {0}. Trying with http...\n".format(str(e))
-      url = unicode(url.replace("https", "http"))
-      req = requests.get(url, allow_redirects=True)
-    except requests.exceptions.RequestException as e:
-      print "Ignoring {0} because of error {1}\n".format(url, str(e))
-      return
-    except requests.exceptions.HTTPError as err:
-      print str(err)
-      return
-    req.encoding = 'utf-8'
 
-    if req.status_code is not 200:
-      print "Warning: "  + str(req.url) + ' has a status code of: ' \
-        + str(req.status_code) + ' omitted from database.\n'
-
-    if cache:
-      caching.runScript(url,unicode(req.text))
-    bs_obj = BeautifulSoup(unicode(req.text),"lxml")
-
-    if hasattr(bs_obj.title, 'string') & (req.status_code == requests.codes.ok):
-      try:
-        title = unicode(bs_obj.title.string).replace(" - XOWA"," - Wikipedia")
-        if url.startswith('http'):
-          if title is None:
-            title = u'Untitled'
-          checks = ['script', 'style', 'meta', '<!--']
-          for chk in bs_obj.find_all(checks):
-            chk.extract()
-          body = unicode(bs_obj.get_text())
-          pattern = re.compile('(^[\s]+)|([\s]+$)', re.MULTILINE)
-          body_str=re.sub(pattern," ",body)
-          if detect(body_str) != "en":
-            print "Ignoring",url,"because language is not supported."
-            return
-          www_url = local_to_www(url)
-          wordcloud = detect_open.try_snippet(url,bs_obj)
-          drows = [title, www_url, body_str, wordcloud]
-        if title is None:
-          title = u'Untitled'
-      except HTTPError as error:
-        title = u'Untitled'
-      except None:
-        title = u'Untitled'
-        #print "Processed",url,"..."
-    return drows
-    # can't connect to the host
-  except:
-    error = sys.exc_info()[0]
-    print "Error - %s" % error
-
-def index_url(urls_to_process, cache):
-    for url in urls_to_process:
-        print "Indexing '{}'\n".format(url)
-        drows = extract_from_url(url, cache)
-        if drows:
-            u = Urls(url=unicode(url))
-            u.title = unicode(drows[0])
-            u.url = unicode(drows[1])
-            u.body = unicode(drows[2])
-            u.wordclouds = unicode(drows[3])
-            u.private = False
-            db.session.add(u)
-            db.session.commit()
-    runDistSemWeighted.runScript()
 
 def index_history(num_pages):
   # [TODO] Set the firefox path here via config file
@@ -182,7 +99,7 @@ def index_from_file(filename):
   urls_to_process = []
   for url in f:
     url = url.rstrip('\n')
-    www_url = local_to_www(url)
+    www_url = xowa.local_to_www(url)
     if not db.session.query(Urls).filter_by(url=www_url).all():
       urls_to_process.append(url)
       print "...to process:",url,"..."
@@ -190,13 +107,29 @@ def index_from_file(filename):
       print url,"is already known..."
   return urls_to_process
 
+def index_url(urls_to_process, cache):
+    for url in urls_to_process:
+        print "Indexing '{}'\n".format(url)
+        if ".pdf" in url:
+          drows = pdfparser.extract_from_url(url,cache)
+        else:
+          drows = htmlparser.extract_from_url(url, cache)
+        if drows:
+            u = Urls(url=unicode(url))
+            u.title = unicode(drows[0])
+            u.url = unicode(drows[1])
+            u.body = unicode(drows[2])
+            u.wordclouds = unicode(drows[3])
+            u.private = False
+            db.session.add(u)
+            db.session.commit()
+    runDistSemWeighted.runScript()
 
 def runScript(*args):
   '''Run script, either by indexing part of history or by indexing the urls
   provided by the user'''
 
   urls_to_process = []
-  
   switch = args[0]
   arg = args[1]
   cache = False
