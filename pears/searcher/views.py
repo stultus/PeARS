@@ -63,8 +63,10 @@ def index():
           pears = ['no pear found :(']
           scorePages.ddg_redirect(query)
         elif not pears:
-            pears = [urllib.urlopen(
-                'http://ip.42.pl/short').read().strip('\n')]
+            try:
+              pears = [urllib.urlopen('http://ip.42.pl/short').read().strip('\n')]
+            except:
+              pears = ['0.0.0.0']
         # '''remove the following lines after testing'''
         # pages = [['http://test.com', 'test']]
 

@@ -106,7 +106,10 @@ def output(best_urls, url_titles, url_wordclouds):
 
 @print_timing
 def get_pear_urls(ip):
-    my_ip = urllib.urlopen('http://ip.42.pl/short').read().strip('\n')
+    try:
+        my_ip = urllib.urlopen('http://ip.42.pl/short').read().strip('\n')
+    except:
+        my_ip = "0.0.0.0"
     if ip == my_ip:
         urls = Urls.query.all()
         return [u.__dict__ for u in urls]
