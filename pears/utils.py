@@ -106,7 +106,10 @@ def query_distribution(query, entropies):
 
 def read_pears(pears):
     profile = Profile.query.first()
-    my_ip = urllib.urlopen('http://ip.42.pl/short').read().strip('\n')
+    try:
+        my_ip = urllib.urlopen('http://ip.42.pl/short').read().strip('\n')
+    except:
+        my_ip = "0.0.0.0"
     pears_dict = {}
     if not pears:
         p = profile.vector
