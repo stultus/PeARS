@@ -13,7 +13,7 @@ import socket
 import math
 import numpy
 
-import getUrlOverlap
+from overlap_calculation import score_url_overlap, generic_overlap
 from .utils import query_distribution, cosine_similarity, print_timing
 from .models import Urls
 import cStringIO
@@ -33,7 +33,7 @@ def scoreDS(query_dist, pear_urls):
         titles[url] = val['title']
         if vector.all():
             score = cosine_similarity(vector, query_dist)
-            if score > 0.3:  # Doc must be good enough
+            if score > 0.4:  # Doc must be good enough
                 DS_scores[url] = score
         else:
             Urls.query.filter_by(url=url).delete()
@@ -46,9 +46,17 @@ def scoreURL(query, pear_urls):
     URL_scores = {}
     for val in pear_urls:
       url = val['url']
-      URL_scores[url] = getUrlOverlap.runScript(query, url)
+      URL_scores[url] = score_url_overlap(query, url)
     return URL_scores
 
+def scoreTitles(query, pear_urls):
+  """Get overlap score between title and query"""
+  title_scores = {}
+  for val in pear_urls:
+    url = val['url']
+    title = val['title']
+    title_scores[url] = generic_overlap(query, title)
+  return title_scores
 
 @print_timing
 def scoreDocs(query, query_dist, pear_urls):
@@ -56,13 +64,18 @@ def scoreDocs(query, query_dist, pear_urls):
     document_scores = {}  # Document scores
     DS_scores, wordclouds, titles = scoreDS(query_dist, pear_urls)
     URL_scores = scoreURL(query, pear_urls)
+    title_scores = scoreTitles(query, pear_urls)
     for val in pear_urls:
       v = val['url']
       if v in DS_scores and v in URL_scores:
-        # If URL overlap high (0.2 because of averag e length of
-        # query=4 -- see getUrlOverlap --  and similarity okay
-        if URL_scores[v] > 0.7 and DS_scores[v] > 0.2:
-          document_scores[v] = DS_scores[v] + URL_scores[v] * 0.2  # Boost DS score by a maximum of 0.2
+        url_bonus = 0
+        title_bonus = 0
+        if URL_scores[v] > 0.7:
+          url_bonus = URL_scores[v] * 0.2
+        if title_scores[v] > 0.7:
+          title_bonus = title_scores[v] * 0.2
+        if DS_scores[v] > 0.2:
+          document_scores[v] = DS_scores[v] + url_bonus + title_bonus  # Boost DS score by a maximum of 0.2
         else:
           document_scores[v] = DS_scores[v]
         if math.isnan(document_scores[v]):  # Check for potential NaN -- messes up with sorting in bestURLs.
